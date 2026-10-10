@@ -21,24 +21,25 @@
       </div>
       <div>
         <h1 class="text-base font-bold tracking-tight text-white">Love2Connect</h1>
-        <p id="backend-status" class="text-[10px] text-pink-400 font-medium">Connecting to Supabase...</p>
+        <p id="backend-status" role="status" class="text-[10px] text-pink-400 font-medium">Loading configuration...</p>
       </div>
     </div>
     <div class="flex items-center space-x-2">
       <button onclick="switchTab('profile')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-full text-xs font-semibold flex items-center space-x-1.5 transition">
-        <i data-lucide="coins" class="w-3.5 h-3.5 text-amber-400"></i>
-        <span id="user-credits">120</span> Credits
+        <i data-lucide="user" class="w-3.5 h-3.5 text-pink-400" aria-hidden="true"></i>
+        <span>Profile</span>
       </button>
     </div>
   </header>
 
   <!-- Main Content Area -->
-  <main id="main-content" class="p-4 max-w-md mx-auto w-full min-h-[80vh]">
+  <main id="main-content" aria-live="polite" class="p-4 max-w-md mx-auto w-full min-h-[80vh]">
     <!-- Dynamic Content -->
   </main>
+  <noscript><p class="p-4 text-center text-slate-300">Enable JavaScript to navigate Love2Connect. Accounts, messaging, payments, and calls are not available in this static version.</p></noscript>
 
   <!-- Bottom Navigation Bar -->
-  <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-slate-900/90 backdrop-blur-lg border-t border-slate-800 px-6 py-2.5 flex justify-around items-center z-50">
+  <nav aria-label="Main navigation" class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-slate-900/90 backdrop-blur-lg border-t border-slate-800 px-6 py-2.5 flex justify-around items-center z-50">
     <button onclick="switchTab('discover')" id="nav-discover" class="nav-btn flex flex-col items-center space-y-1 text-pink-500 font-semibold transition">
       <i data-lucide="sparkles" class="w-5 h-5 stroke-[2.5px]"></i>
       <span class="text-[10px]">Discover</span>
@@ -62,280 +63,79 @@
     const supabaseUrl = 'https://ycoywnfsfqygubszrzzt.supabase.co';
     const supabaseAnonKey = 'sb_publishable_240ym7HucnCx-1d3PvuhOg_8ReZALm6';
     let supabaseClient = null;
+    let currentTab = 'discover';
+    const availableTabs = ['discover', 'chat', 'call', 'profile'];
 
-    if (supabaseUrl && supabaseAnonKey) {
+    function initializeBackend() {
+      const status = document.getElementById('backend-status');
+      if (!window.supabase || !supabaseUrl || !supabaseAnonKey) {
+        status.textContent = 'Supabase client unavailable';
+        return;
+      }
       try {
-        supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
-        document.getElementById('backend-status').innerText = '● Live & Secure';
-      } catch (e) {
-        document.getElementById('backend-status').innerText = '● Offline Mode';
+        supabaseClient = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+        status.textContent = 'Supabase configured · Accounts unavailable';
+      } catch {
+        status.textContent = 'Supabase configuration could not be loaded';
       }
     }
 
-    let currentTab = 'discover';
-    let userCredits = 120;
-    let selectedAmount = 50;
-    let selectedPlanName = "Basic Chat (10 Credits)";
-
-    let profiles = [
-      { id: 1, name: 'Chloe', age: 24, location: 'Nairobi, Kenya', img: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80', bio: 'Adventurous spirit, coffee addict & weekend hiker. Let’s explore Nairobi together!', verified: true },
-      { id: 2, name: 'Liam', age: 27, location: 'Mombasa, Kenya', img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80', bio: 'Tech founder & beach lover. Looking for genuine intellectual chemistry.', verified: true },
-      { id: 3, name: 'Sofia', age: 25, location: 'Kisumu, Kenya', img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=600&q=80', bio: 'Art director, foodie, and music enthusiast. Good vibes only ✨', verified: false }
-    ];
-
-    let messages = [
-      { id: 1, sender: 'Chloe', text: 'Hey Stephen! Welcome to Love2Connect 👋', time: '14:20', isMe: false },
-      { id: 2, sender: 'You', text: 'Hi Chloe! Excited to connect with amazing people here.', time: '14:22', isMe: true },
-    ];
-
     function switchTab(tab) {
+      if (!availableTabs.includes(tab)) return;
       currentTab = tab;
-      
-      document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.className = "nav-btn flex flex-col items-center space-y-1 text-slate-400 hover:text-slate-200 transition";
-        let icon = btn.querySelector('i');
-        if (icon) {
-          icon.classList.remove('stroke-[2.5px]', 'text-pink-500');
-          icon.classList.add('stroke-2');
-        }
+      document.querySelectorAll('.nav-btn').forEach(button => {
+        const active = button.id === 'nav-' + tab;
+        button.className = 'nav-btn flex flex-col items-center space-y-1 transition ' +
+          (active ? 'text-pink-500 font-semibold' : 'text-slate-400 hover:text-slate-200');
+        if (active) button.setAttribute('aria-current', 'page');
+        else button.removeAttribute('aria-current');
       });
-
-      const activeBtn = document.getElementById(`nav-${tab}`);
-      if (activeBtn) {
-        activeBtn.className = "nav-btn flex flex-col items-center space-y-1 text-pink-500 font-semibold transition";
-        let activeIcon = activeBtn.querySelector('i');
-        if (activeIcon) {
-          activeIcon.classList.remove('stroke-2');
-          activeIcon.classList.add('stroke-[2.5px]');
-        }
-      }
-
       renderContent();
     }
 
-    function selectPackage(amount, planName) {
-      selectedAmount = amount;
-      selectedPlanName = planName;
-      const label = document.getElementById("selected-plan-label");
-      if (label) {
-        label.textContent = `${planName} - KES ${amount}`;
-      }
+    function unavailableCard(icon, title, description) {
+      return `<section class="bg-slate-800/60 border border-slate-700/80 rounded-3xl p-6 space-y-4 shadow-xl">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-500/20 to-purple-600/20 flex items-center justify-center">
+          <i data-lucide="${icon}" class="w-6 h-6 text-pink-400" aria-hidden="true"></i>
+        </div>
+        <h2 class="text-xl font-bold text-white">${title}</h2>
+        <p class="text-sm text-slate-300 leading-relaxed">${description}</p>
+        <span class="inline-block rounded-full border border-slate-700 bg-slate-900/60 px-3 py-1 text-xs text-slate-400">Not yet available</span>
+      </section>`;
     }
 
     function renderContent() {
       const main = document.getElementById('main-content');
       if (!main) return;
-      
       if (currentTab === 'discover') {
-        main.innerHTML = `
-          <section class="space-y-4">
-            <div class="flex items-center justify-between">
-              <div>
-                <h2 class="text-xl font-extrabold tracking-tight text-white">Discover Matches</h2>
-                <p class="text-xs text-slate-400">Verified profiles near you in Kenya</p>
-              </div>
-              <button onclick="alert('Filters: Showing nearby active users')" class="p-2 bg-slate-800 border border-slate-700 rounded-xl text-slate-300 hover:text-white transition">
-                <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
-              </button>
-            </div>
-
-            <div class="space-y-6">
-              ${profiles.map(p => `
-                <div class="bg-slate-800/60 border border-slate-700/80 rounded-3xl overflow-hidden shadow-xl backdrop-blur-sm">
-                  <div class="relative h-80 w-full">
-                    <img src="${p.img}" alt="${p.name}" class="w-full h-full object-cover" />
-                    <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/20 to-transparent"></div>
-                    ${p.verified ? '<span class="absolute top-4 left-4 bg-blue-500/90 text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-md"><i data-lucide="badge-check" class="w-3 h-3"></i> Verified</span>' : ''}
-                    <div class="absolute bottom-4 left-4 right-4">
-                      <h3 class="text-2xl font-bold text-white flex items-center gap-2">${p.name},${p.age}</h3>
-                      <p class="text-xs text-slate-300 flex items-center gap-1 mt-0.5"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-pink-400"></i> ${p.location}</p>
-                    </div>
-                  </div>
-                  <div class="p-4 space-y-4">
-                    <p class="text-sm text-slate-300 leading-relaxed">${p.bio}</p>
-                    <div class="flex gap-3 pt-1">
-                      <button onclick="handleLike('${p.name}')" class="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold py-3 rounded-2xl text-sm transition shadow-lg shadow-pink-500/25 flex items-center justify-center gap-2">
-                        <i data-lucide="heart" class="w-4 h-4 fill-current"></i> Like Profile
-                      </button>
-                      <button onclick="switchTab('chat')" class="px-5 bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 rounded-2xl text-sm transition flex items-center justify-center">
-                        <i data-lucide="message-square" class="w-4 h-4"></i>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              `).join('')}
-            </div>
-          </section>
-        `;
+        main.innerHTML = `<section class="space-y-5">
+          <div>
+            <h2 class="text-xl font-extrabold tracking-tight text-white">Discover Matches</h2>
+            <p class="text-xs text-slate-400 mt-1">Real connections start with real profiles.</p>
+          </div>
+          ${unavailableCard('heart', 'Discover is not connected yet', 'Member discovery requires authenticated accounts and a securely connected profile database. No fictional profiles are displayed as real members.')}
+          <button type="button" onclick="switchTab('profile')" class="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold rounded-xl px-4 py-3 hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-pink-400">View profile status</button>
+        </section>`;
       } else if (currentTab === 'chat') {
-        main.innerHTML = `
-          <section class="bg-slate-800/60 border border-slate-700/80 rounded-3xl flex flex-col h-[78vh] shadow-xl overflow-hidden backdrop-blur-sm">
-            <div class="p-4 border-b border-slate-700/80 flex items-center justify-between bg-slate-800/90">
-              <div class="flex items-center space-x-3">
-                <div class="relative">
-                  <img src="${profiles[0].img}" class="w-10 h-10 rounded-full object-cover border border-pink-500" />
-                  <span class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-slate-800 rounded-full"></span>
-                </div>
-                <div>
-                  <h3 class="font-bold text-white text-sm">Chloe</h3>
-                  <span class="text-[10px] text-emerald-400 font-medium">Active now</span>
-                </div>
-              </div>
-              <div class="flex items-center space-x-1">
-                <button onclick="switchTab('call')" class="p-2.5 bg-slate-700 hover:bg-slate-600 rounded-xl text-pink-400 transition">
-                  <i data-lucide="video" class="w-4 h-4"></i>
-                </button>
-              </div>
-            </div>
-
-            <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3">
-              ${messages.map(msg => `
-                <div class="flex ${msg.isMe ? 'justify-end' : 'justify-start'}">
-                  <div class="max-w-[80%] rounded-2xl px-4 py-3 text-sm ${msg.isMe ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-br-none shadow-md' : 'bg-slate-700 text-slate-100 rounded-bl-none'}">
-                    <p>${msg.text}</p>
-                    <span class="text-[9px] block mt-1 ${msg.isMe ? 'text-pink-200 text-right' : 'text-slate-400'}">${msg.time}</span>
-                  </div>
-                </div>
-              `).join('')}
-            </div>
-
-            <form onsubmit="handleSendMessage(event)" class="p-3 border-t border-slate-700/80 bg-slate-800/90 flex items-center space-x-2">
-              <input type="text" id="msg-input" placeholder="Type a message..." class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-pink-500" />
-              <button type="submit" class="p-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl hover:opacity-90 transition shadow-md">
-                <i data-lucide="send" class="w-4 h-4"></i>
-              </button>
-            </form>
-          </section>
-        `;
-        const chatContainer = document.getElementById('chat-messages');
-        if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
+        main.innerHTML = unavailableCard('message-square', 'Chat is not connected yet', 'Private messaging requires signed-in accounts, a mutual match, and secure database access. Messages cannot be sent or saved in this version.');
       } else if (currentTab === 'call') {
-        main.innerHTML = `
-          <section class="bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 border border-slate-700/80 rounded-3xl p-6 flex flex-col items-center justify-between text-center min-h-[78vh] shadow-2xl">
-            <div class="space-y-1 mt-4">
-              <span class="text-[10px] uppercase tracking-widest text-pink-400 font-bold px-3 py-1 bg-pink-500/10 rounded-full border border-pink-500/20">Secure WebRTC Call</span>
-              <h2 class="text-2xl font-bold text-white mt-2">Chloe</h2>
-              <p class="text-xs text-slate-400">Encrypted HD Voice & Video</p>
-            </div>
-
-            <div class="relative my-8">
-              <div class="absolute -inset-4 rounded-full bg-pink-500/20 blur-xl animate-pulse"></div>
-              <img src="${profiles[0].img}" class="relative w-36 h-36 rounded-full object-cover border-4 border-pink-500 shadow-2xl" />
-            </div>
-
-            <div class="w-full space-y-4 mb-4">
-              <div class="flex items-center justify-center space-x-6">
-                <button onclick="alert('Mic toggled')" class="p-4 bg-slate-800 hover:bg-slate-700 rounded-full text-white border border-slate-700 transition shadow-lg"><i data-lucide="mic" class="w-5 h-5"></i></button>
-                <button onclick="alert('Call ended')" class="p-5 bg-red-500 hover:bg-red-600 rounded-full text-white shadow-xl shadow-red-500/30 transform hover:scale-105 transition"><i data-lucide="phone-off" class="w-6 h-6"></i></button>
-                <button onclick="alert('Camera toggled')" class="p-4 bg-slate-800 hover:bg-slate-700 rounded-full text-white border border-slate-700 transition shadow-lg"><i data-lucide="video" class="w-5 h-5"></i></button>
-              </div>
-            </div>
-          </section>
-        `;
+        main.innerHTML = unavailableCard('phone-call', 'Voice & video calls are unavailable', 'Calling is not implemented. No call is started, no microphone or camera access is requested, and no calling credits are charged.') +
+          '<button type="button" disabled class="w-full mt-4 px-4 py-3 rounded-xl bg-slate-800 text-slate-500 cursor-not-allowed">Calling unavailable</button>';
       } else if (currentTab === 'profile') {
-        main.innerHTML = `
-          <section class="bg-slate-800/60 border border-slate-700/80 rounded-3xl p-6 space-y-6 backdrop-blur-sm shadow-xl">
-            <div class="flex flex-col items-center text-center space-y-3">
-              <div class="w-24 h-24 rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 p-1 shadow-xl">
-                <div class="w-full h-full rounded-full bg-slate-900 flex items-center justify-center text-3xl font-extrabold text-white">U</div>
-              </div>
-              <div>
-                <h2 class="text-xl font-bold text-white">Your Profile</h2>
-                <p class="text-xs text-emerald-400 font-medium flex items-center justify-center gap-1 mt-1">● Supabase Auth Active</p>
-              </div>
-            </div>
-
-            <div class="bg-gradient-to-r from-emerald-900/40 to-teal-900/40 border border-emerald-500/30 rounded-2xl p-4 flex items-center justify-between">
-              <div>
-                <span class="text-[10px] uppercase font-bold tracking-wider text-emerald-400">M-Pesa Wallet</span>
-                <p class="text-2xl font-extrabold text-white"><span id="wallet-credits">${userCredits}</span> Credits</p>
-              </div>
-            </div>
-
-            <!-- M-Pesa Package Top-Up Section -->
-            <div class="bg-slate-900/80 border border-slate-700/80 rounded-2xl p-4 space-y-3">
-              <h3 class="text-sm font-bold text-white flex items-center gap-2">
-                <i data-lucide="zap" class="w-4 h-4 text-emerald-400"></i> Renew Packages & Credits
-              </h3>
-              <p class="text-[11px] text-slate-400">Choose a package for chats, calls, or VIP access:</p>
-              
-              <div class="grid grid-cols-3 gap-2">
-                <button type="button" onclick="selectPackage(50, 'Basic Chat')" class="p-2.5 rounded-xl border border-pink-500/50 bg-slate-800 text-center hover:border-pink-500 transition cursor-pointer">
-                  <div class="text-[10px] text-slate-400">Basic</div>
-                  <div class="text-sm font-bold text-white">KES 50</div>
-                  <div class="text-[9px] text-pink-400 mt-0.5">10 Chats</div>
-                </button>
-                <button type="button" onclick="selectPackage(200, 'Voice Calls')" class="p-2.5 rounded-xl border border-slate-700 bg-slate-800 text-center hover:border-pink-500 transition cursor-pointer">
-                  <div class="text-[10px] text-slate-400">Calls</div>
-                  <div class="text-sm font-bold text-white">KES 200</div>
-                  <div class="text-[9px] text-pink-400 mt-0.5">30 Mins</div>
-                </button>
-                <button type="button" onclick="selectPackage(500, 'VIP Unlimited')" class="p-2.5 rounded-xl border border-slate-700 bg-slate-800 text-center hover:border-pink-500 transition cursor-pointer">
-                  <div class="text-[10px] text-slate-400">VIP</div>
-                  <div class="text-sm font-bold text-white">KES 500</div>
-                  <div class="text-[9px] text-pink-400 mt-0.5">Unlimited</div>
-                </button>
-              </div>
-
-              <div class="flex justify-between items-center text-xs pt-1 px-1">
-                <span class="text-slate-400">Selected:</span>
-                <span id="selected-plan-label" class="font-bold text-pink-400">${selectedPlanName} (KES ${selectedAmount})</span>
-              </div>
-
-              <div>
-                <label for="phone-input" class="block text-[10px] font-medium text-slate-400 mb-1">M-Pesa Phone Number</label>
-                <input 
-                  type="text" 
-                  id="phone-input" 
-                  placeholder="0712345678 or 0112345678" 
-                  class="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-pink-500 text-xs"
-                />
-              </div>
-
-              <button 
-                id="pay-btn" 
-                onclick="handleMpesaCheckout()" 
-                class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition duration-200 shadow-lg shadow-emerald-600/20 text-xs cursor-pointer">
-                Pay via M-Pesa STK Push
-              </button>
-            </div>
-
-            <div class="space-y-2.5 pt-1">
-              <button onclick="alert('Edit profile modal coming up')" class="w-full flex items-center justify-between p-3.5 bg-slate-700/50 hover:bg-slate-700 border border-slate-700 rounded-xl text-sm font-medium text-slate-200 transition">
-                <span class="flex items-center gap-2"><i data-lucide="user-pen" class="w-4 h-4 text-pink-400"></i> Edit Bio & Photos</span><span>›</span>
-              </button>
-              <button onclick="alert('Privacy mode: Incognito enabled')" class="w-full flex items-center justify-between p-3.5 bg-slate-700/50 hover:bg-slate-700 border border-slate-700 rounded-xl text-sm font-medium text-slate-200 transition">
-                <span class="flex items-center gap-2"><i data-lucide="shield-check" class="w-4 h-4 text-purple-400"></i> Safety & Verification</span><span>›</span>
-              </button>
-              <button onclick="alert('Settings updated')" class="w-full flex items-center justify-between p-3.5 bg-slate-700/50 hover:bg-slate-700 border border-slate-700 rounded-xl text-sm font-medium text-slate-200 transition">
-                <span class="flex items-center gap-2"><i data-lucide="settings" class="w-4 h-4 text-slate-400"></i> App Settings</span><span>›</span>
-              </button>
-            </div>
+        main.innerHTML = `<section class="space-y-5">
+          ${unavailableCard('user', 'Your profile', 'Registration, login, and profile editing are not implemented in this static repair. Existing Supabase configuration is preserved, but it does not establish an authenticated account or save a profile.')}
+          <section class="bg-gradient-to-br from-emerald-900/20 to-slate-800 border border-slate-700 rounded-3xl p-6 space-y-3">
+            <h2 class="text-lg font-bold text-white">M-Pesa payments</h2>
+            <p class="text-sm text-slate-300 leading-relaxed">Payments are unavailable until secure server-side payment initiation and confirmation are implemented. No payment is requested and no credits are awarded.</p>
+            <button type="button" disabled class="w-full px-4 py-3 rounded-xl bg-slate-800 text-slate-500 cursor-not-allowed">M-Pesa unavailable</button>
           </section>
-        `;
+        </section>`;
       }
-
-      if (window.lucide) {
-        lucide.createIcons();
-      }
+      if (window.lucide) window.lucide.createIcons();
     }
 
-    function handleLike(name) {
-      alert(`You liked ${name}! Match notification sent.`);
-    }
-
-    function handleSendMessage(e) {
-      e.preventDefault();
-      const input = document.getElementById('msg-input');
-      if (!input) return;
-      const text = input.value.trim();
-      if (!text) return;
-
-      messages.push({ id: Date.now(), sender: 'You', text: text, time: 'Just now', isMe: true });
-      input.value = '';
-      renderContent();
-    }
-
-    async function handleMpesaCheckout() {
-      const phoneInput = document.getElementById("phone-input");
-      const payBtn = d
+    initializeBackend();
+    switchTab(currentTab);
+  </script>
+</body>
+</html>
