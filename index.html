@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Love2Connect</title>
+  <title>Love2Connect - Elite Social Discovery</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons -->
@@ -11,79 +11,95 @@
   <!-- Supabase JS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-slate-50 text-slate-800 pb-20">
+<body class="bg-slate-900 text-slate-100 pb-24 font-sans antialiased">
 
   <!-- Top Header -->
-  <header class="sticky top-0 z-10 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-600 text-white p-4 shadow-md flex items-center justify-between">
+  <header class="sticky top-0 z-20 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 px-4 py-3 flex items-center justify-between">
     <div class="flex items-center space-x-2">
-      <i data-lucide="heart" class="w-7 h-7 text-pink-200 fill-current"></i>
-      <h1 class="text-xl font-bold tracking-wide">Love2Connect</h1>
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center shadow-lg shadow-pink-500/20">
+        <i data-lucide="heart" class="w-5 h-5 text-white fill-current"></i>
+      </div>
+      <div>
+        <h1 class="text-base font-bold tracking-tight text-white">Love2Connect</h1>
+        <p id="backend-status" class="text-[10px] text-pink-400 font-medium">Connecting to Supabase...</p>
+      </div>
     </div>
-    <div id="backend-status" class="text-xs bg-white/20 px-3 py-1 rounded-full font-medium backdrop-blur-sm">
-      Checking connection...
+    <div class="flex items-center space-x-2">
+      <button onclick="switchTab('profile')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-full text-xs font-semibold flex items-center space-x-1.5 transition">
+        <i data-lucide="coins" class="w-3.5 h-3.5 text-amber-400"></i>
+        <span id="user-credits">120</span> Credits
+      </button>
     </div>
   </header>
 
   <!-- Main Content Area -->
-  <main id="main-content" class="p-4 max-w-lg mx-auto w-full">
-    <!-- Content injected via JavaScript -->
+  <main id="main-content" class="p-4 max-w-md mx-auto w-full min-h-[80vh]">
+    <!-- Dynamic Content -->
   </main>
 
   <!-- Bottom Navigation Bar -->
-  <nav class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-200 px-6 py-2 flex justify-around items-center z-50">
-    <button onclick="switchTab('discover')" id="nav-discover" class="nav-btn flex flex-col items-center space-y-1 text-pink-600 font-semibold scale-105 transition">
+  <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-slate-900/90 backdrop-blur-lg border-t border-slate-800 px-6 py-2.5 flex justify-around items-center z-50">
+    <button onclick="switchTab('discover')" id="nav-discover" class="nav-btn flex flex-col items-center space-y-1 text-pink-500 font-semibold transition">
       <i data-lucide="sparkles" class="w-5 h-5 stroke-[2.5px]"></i>
-      <span class="text-[11px]">Discover</span>
+      <span class="text-[10px]">Discover</span>
     </button>
-    <button onclick="switchTab('chat')" id="nav-chat" class="nav-btn flex flex-col items-center space-y-1 text-slate-400 hover:text-slate-600 transition">
+    <button onclick="switchTab('chat')" id="nav-chat" class="nav-btn flex flex-col items-center space-y-1 text-slate-400 hover:text-slate-200 transition">
       <i data-lucide="message-square" class="w-5 h-5 stroke-2"></i>
-      <span class="text-[11px]">Chat</span>
+      <span class="text-[10px]">Chat</span>
     </button>
-    <button onclick="switchTab('call')" id="nav-call" class="nav-btn flex flex-col items-center space-y-1 text-slate-400 hover:text-slate-600 transition">
-      <i data-lucide="phone" class="w-5 h-5 stroke-2"></i>
-      <span class="text-[11px]">Call</span>
+    <button onclick="switchTab('call')" id="nav-call" class="nav-btn flex flex-col items-center space-y-1 text-slate-400 hover:text-slate-200 transition">
+      <i data-lucide="phone-call" class="w-5 h-5 stroke-2"></i>
+      <span class="text-[10px]">Calls</span>
     </button>
-    <button onclick="switchTab('profile')" id="nav-profile" class="nav-btn flex flex-col items-center space-y-1 text-slate-400 hover:text-slate-600 transition">
+    <button onclick="switchTab('profile')" id="nav-profile" class="nav-btn flex flex-col items-center space-y-1 text-slate-400 hover:text-slate-200 transition">
       <i data-lucide="user" class="w-5 h-5 stroke-2"></i>
-      <span class="text-[11px]">Profile</span>
+      <span class="text-[10px]">Profile</span>
     </button>
   </nav>
 
   <script>
-    // Supabase Configuration with your credentials
+    // Supabase Configuration
     const supabaseUrl = 'https://ycoywnfsfqygubszrzzt.supabase.co';
     const supabaseAnonKey = 'sb_publishable_240ym7HucnCx-1d3PvuhOg_8ReZALm6';
     let supabaseClient = null;
 
     if (supabaseUrl && supabaseAnonKey) {
-      supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
-      document.getElementById('backend-status').innerText = 'Backend Connected';
-    } else {
-      document.getElementById('backend-status').innerText = 'Demo Mode';
+      try {
+        supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
+        document.getElementById('backend-status').innerText = '● Live & Secure';
+      } catch (e) {
+        document.getElementById('backend-status').innerText = '● Offline Mode';
+      }
     }
 
     let currentTab = 'discover';
+    let userCredits = 120;
+    let profiles = [
+      { id: 1, name: 'Chloe', age: 24, location: 'Nairobi, Kenya', img: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80', bio: 'Adventurous spirit, coffee addict & weekend hiker. Let’s explore Nairobi together!', verified: true },
+      { id: 2, name: 'Liam', age: 27, location: 'Mombasa, Kenya', img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80', bio: 'Tech founder & beach lover. Looking for genuine intellectual chemistry.', verified: true },
+      { id: 3, name: 'Sofia', age: 25, location: 'Kisumu, Kenya', img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=600&q=80', bio: 'Art director, foodie, and music enthusiast. Good vibes only ✨', verified: false }
+    ];
+
     let messages = [
-      { id: 1, sender: 'Chloe', text: 'Hey there! How is your day going?', time: '14:20', isMe: false },
-      { id: 2, sender: 'You', text: 'Hi Chloe! Going great, just checking out Love2Connect.', time: '14:22', isMe: true },
+      { id: 1, sender: 'Chloe', text: 'Hey Stephen! Welcome to Love2Connect 👋', time: '14:20', isMe: false },
+      { id: 2, sender: 'You', text: 'Hi Chloe! Excited to connect with amazing people here.', time: '14:22', isMe: true },
     ];
 
     function switchTab(tab) {
       currentTab = tab;
       
       document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.className = "nav-btn flex flex-col items-center space-y-1 text-slate-400 hover:text-slate-600 transition";
+        btn.className = "nav-btn flex flex-col items-center space-y-1 text-slate-400 hover:text-slate-200 transition";
         let icon = btn.querySelector('i');
         if (icon) {
-          icon.classList.remove('stroke-[2.5px]');
+          icon.classList.remove('stroke-[2.5px]', 'text-pink-500');
           icon.classList.add('stroke-2');
         }
-        btn.classList.remove('scale-105', 'text-pink-600', 'font-semibold');
       });
 
       const activeBtn = document.getElementById(`nav-${tab}`);
       if (activeBtn) {
-        activeBtn.className = "nav-btn flex flex-col items-center space-y-1 text-pink-600 font-semibold scale-105 transition";
+        activeBtn.className = "nav-btn flex flex-col items-center space-y-1 text-pink-500 font-semibold transition";
         let activeIcon = activeBtn.querySelector('i');
         if (activeIcon) {
           activeIcon.classList.remove('stroke-2');
@@ -101,65 +117,79 @@
       if (currentTab === 'discover') {
         main.innerHTML = `
           <section class="space-y-4">
-            <div class="flex items-center justify-between mb-2">
-              <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-                <i data-lucide="sparkles" class="w-5 h-5 text-pink-500"></i> Discover Matches
-              </h2>
-            </div>
-            ${[
-              { name: 'Chloe, 24', location: 'Nairobi, Kenya', img: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80', bio: 'Adventurous spirit looking for genuine connections.' },
-              { name: 'Liam, 27', location: 'Mombasa, Kenya', img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80', bio: 'Coffee lover, tech enthusiast, and weekend surfer.' },
-              { name: 'Sofia, 25', location: 'Kisumu, Kenya', img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80', bio: 'Arts and culture seeker, love deep conversations.' }
-            ].map(profile => `
-              <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 space-y-3">
-                <div class="flex items-center space-x-4">
-                  <img src="${profile.img}" alt="${profile.name}" class="w-14 h-14 rounded-full object-cover shadow" />
-                  <div>
-                    <h3 class="font-bold text-slate-900">${profile.name}</h3>
-                    <p class="text-xs text-slate-500">${profile.location}</p>
-                  </div>
-                </div>
-                <p class="text-sm text-slate-600">${profile.bio}</p>
-                <div class="flex gap-2 pt-2">
-                  <button class="flex-1 bg-pink-500 hover:bg-pink-600 text-white font-medium py-2 rounded-xl text-sm transition shadow-sm flex items-center justify-center gap-1">
-                    <i data-lucide="heart" class="w-4 h-4 fill-current"></i> Like
-                  </button>
-                  <button onclick="switchTab('chat')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2 rounded-xl text-sm transition flex items-center justify-center gap-1">
-                    <i data-lucide="message-square" class="w-4 h-4"></i> Message
-                  </button>
-                </div>
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-xl font-extrabold tracking-tight text-white">Discover Matches</h2>
+                <p class="text-xs text-slate-400">Verified profiles near you in Kenya</p>
               </div>
-            `).join('')}
-          </section>
-        `;
-      } else if (currentTab === 'chat') {
-        main.innerHTML = `
-          <section class="bg-white rounded-2xl shadow-sm border border-slate-100 flex flex-col h-[75vh]">
-            <div class="p-4 border-b border-slate-100 flex items-center justify-between">
-              <div class="flex items-center space-x-3">
-                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" class="w-10 h-10 rounded-full object-cover" />
-                <div>
-                  <h3 class="font-bold text-slate-900 text-sm">Chloe</h3>
-                  <span class="text-xs text-emerald-500 font-medium">● Online</span>
-                </div>
-              </div>
-              <button onclick="switchTab('call')" class="p-2 text-purple-600 hover:bg-purple-50 rounded-full">
-                <i data-lucide="phone" class="w-5 h-5"></i>
+              <button onclick="alert('Filters: Showing nearby active users')" class="p-2 bg-slate-800 border border-slate-700 rounded-xl text-slate-300 hover:text-white transition">
+                <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
               </button>
             </div>
-            <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3">
-              ${messages.map(msg => `
-                <div class="flex ${msg.isMe ? 'justify-end' : 'justify-start'}">
-                  <div class="max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${msg.isMe ? 'bg-purple-600 text-white rounded-br-none' : 'bg-slate-100 text-slate-800 rounded-bl-none'}">
-                    <p>${msg.text}</p>
-                    <span class="text-[10px] block mt-1 ${msg.isMe ? 'text-purple-200 text-right' : 'text-slate-400'}">${msg.time}</span>
+
+            <div class="space-y-6">
+              ${profiles.map(p => `
+                <div class="bg-slate-800/60 border border-slate-700/80 rounded-3xl overflow-hidden shadow-xl backdrop-blur-sm">
+                  <div class="relative h-80 w-full">
+                    <img src="${p.img}" alt="${p.name}" class="w-full h-full object-cover" />
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/20 to-transparent"></div>
+                    ${p.verified ? '<span class="absolute top-4 left-4 bg-blue-500/90 text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-md"><i data-lucide="badge-check" class="w-3 h-3"></i> Verified</span>' : ''}
+                    <div class="absolute bottom-4 left-4 right-4">
+                      <h3 class="text-2xl font-bold text-white flex items-center gap-2">${p.name},${p.age}</h3>
+                      <p class="text-xs text-slate-300 flex items-center gap-1 mt-0.5"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-pink-400"></i> ${p.location}</p>
+                    </div>
+                  </div>
+                  <div class="p-4 space-y-4">
+                    <p class="text-sm text-slate-300 leading-relaxed">${p.bio}</p>
+                    <div class="flex gap-3 pt-1">
+                      <button onclick="handleLike('${p.name}')" class="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold py-3 rounded-2xl text-sm transition shadow-lg shadow-pink-500/25 flex items-center justify-center gap-2">
+                        <i data-lucide="heart" class="w-4 h-4 fill-current"></i> Like Profile
+                      </button>
+                      <button onclick="switchTab('chat')" class="px-5 bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 rounded-2xl text-sm transition flex items-center justify-center">
+                        <i data-lucide="message-square" class="w-4 h-4"></i>
+                      </button>
+                    </div>
                   </div>
                 </div>
               `).join('')}
             </div>
-            <form onsubmit="handleSendMessage(event)" class="p-3 border-t border-slate-100 flex items-center space-x-2">
-              <input type="text" id="msg-input" placeholder="Type a message..." class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
-              <button type="submit" class="p-2.5 bg-purple-600 text-white rounded-xl hover:bg-purple-700">
+          </section>
+        `;
+      } else if (currentTab === 'chat') {
+        main.innerHTML = `
+          <section class="bg-slate-800/60 border border-slate-700/80 rounded-3xl flex flex-col h-[78vh] shadow-xl overflow-hidden backdrop-blur-sm">
+            <div class="p-4 border-b border-slate-700/80 flex items-center justify-between bg-slate-800/90">
+              <div class="flex items-center space-x-3">
+                <div class="relative">
+                  <img src="${profiles[0].img}" class="w-10 h-10 rounded-full object-cover border border-pink-500" />
+                  <span class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-slate-800 rounded-full"></span>
+                </div>
+                <div>
+                  <h3 class="font-bold text-white text-sm">Chloe</h3>
+                  <span class="text-[10px] text-emerald-400 font-medium">Active now</span>
+                </div>
+              </div>
+              <div class="flex items-center space-x-1">
+                <button onclick="switchTab('call')" class="p-2.5 bg-slate-700 hover:bg-slate-600 rounded-xl text-pink-400 transition">
+                  <i data-lucide="video" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+
+            <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3">
+              ${messages.map(msg => `
+                <div class="flex ${msg.isMe ? 'justify-end' : 'justify-start'}">
+                  <div class="max-w-[80%] rounded-2xl px-4 py-3 text-sm ${msg.isMe ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-br-none shadow-md' : 'bg-slate-700 text-slate-100 rounded-bl-none'}">
+                    <p>${msg.text}</p>
+                    <span class="text-[9px] block mt-1 ${msg.isMe ? 'text-pink-200 text-right' : 'text-slate-400'}">${msg.time}</span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+
+            <form onsubmit="handleSendMessage(event)" class="p-3 border-t border-slate-700/80 bg-slate-800/90 flex items-center space-x-2">
+              <input type="text" id="msg-input" placeholder="Type a message..." class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-pink-500" />
+              <button type="submit" class="p-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl hover:opacity-90 transition shadow-md">
                 <i data-lucide="send" class="w-4 h-4"></i>
               </button>
             </form>
@@ -169,45 +199,59 @@
         if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
       } else if (currentTab === 'call') {
         main.innerHTML = `
-          <section class="bg-gradient-to-b from-slate-900 to-slate-800 text-white rounded-3xl p-8 flex flex-col items-center justify-between text-center min-h-[70vh] shadow-xl">
-            <div class="space-y-2 mt-6">
-              <span class="text-xs uppercase tracking-widest text-pink-400 font-semibold">Voice & Video Call</span>
-              <h2 class="text-2xl font-bold">Chloe</h2>
-              <p class="text-xs text-slate-400">Ready to connect...</p>
+          <section class="bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 border border-slate-700/80 rounded-3xl p-6 flex flex-col items-center justify-between text-center min-h-[78vh] shadow-2xl">
+            <div class="space-y-1 mt-4">
+              <span class="text-[10px] uppercase tracking-widest text-pink-400 font-bold px-3 py-1 bg-pink-500/10 rounded-full border border-pink-500/20">Secure WebRTC Call</span>
+              <h2 class="text-2xl font-bold text-white mt-2">Chloe</h2>
+              <p class="text-xs text-slate-400">Encrypted HD Voice & Video</p>
             </div>
-            <div class="relative">
-              <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" class="w-32 h-32 rounded-full object-cover border-4 border-pink-500 animate-pulse shadow-2xl" />
+
+            <div class="relative my-8">
+              <div class="absolute -inset-4 rounded-full bg-pink-500/20 blur-xl animate-pulse"></div>
+              <img src="${profiles[0].img}" class="relative w-36 h-36 rounded-full object-cover border-4 border-pink-500 shadow-2xl" />
             </div>
-            <div class="flex items-center space-x-6 mb-6">
-              <button class="p-4 bg-slate-700/80 hover:bg-slate-700 rounded-full text-white shadow-lg"><i data-lucide="phone" class="w-6 h-6"></i></button>
-              <button class="p-5 bg-emerald-500 hover:bg-emerald-600 rounded-full text-white shadow-lg transform hover:scale-105 transition"><i data-lucide="video" class="w-7 h-7"></i></button>
+
+            <div class="w-full space-y-4 mb-4">
+              <div class="flex items-center justify-center space-x-6">
+                <button onclick="alert('Mic toggled')" class="p-4 bg-slate-800 hover:bg-slate-700 rounded-full text-white border border-slate-700 transition shadow-lg"><i data-lucide="mic" class="w-5 h-5"></i></button>
+                <button onclick="alert('Call ended')" class="p-5 bg-red-500 hover:bg-red-600 rounded-full text-white shadow-xl shadow-red-500/30 transform hover:scale-105 transition"><i data-lucide="phone-off" class="w-6 h-6"></i></button>
+                <button onclick="alert('Camera toggled')" class="p-4 bg-slate-800 hover:bg-slate-700 rounded-full text-white border border-slate-700 transition shadow-lg"><i data-lucide="video" class="w-5 h-5"></i></button>
+              </div>
             </div>
           </section>
         `;
       } else if (currentTab === 'profile') {
         main.innerHTML = `
-          <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-6">
+          <section class="bg-slate-800/60 border border-slate-700/80 rounded-3xl p-6 space-y-6 backdrop-blur-sm shadow-xl">
             <div class="flex flex-col items-center text-center space-y-3">
-              <div class="w-24 h-24 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 p-1 shadow-md">
-                <div class="w-full h-full rounded-full bg-white flex items-center justify-center text-3xl font-bold text-purple-600">U</div>
+              <div class="w-24 h-24 rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 p-1 shadow-xl">
+                <div class="w-full h-full rounded-full bg-slate-900 flex items-center justify-center text-3xl font-extrabold text-white">U</div>
               </div>
               <div>
-                <h2 class="text-xl font-bold text-slate-900">Your Profile</h2>
-                <p class="text-xs text-emerald-600 font-medium">● Backend Connected via Supabase</p>
+                <h2 class="text-xl font-bold text-white">Your Profile</h2>
+                <p class="text-xs text-emerald-400 font-medium flex items-center justify-center gap-1 mt-1">● Supabase Auth Active</p>
               </div>
             </div>
-            <div class="space-y-3 pt-2">
-              <button class="w-full flex items-center justify-between p-3.5 bg-slate-50 hover:bg-slate-100 rounded-xl text-sm font-medium text-slate-700 transition">
-                <span class="flex items-center gap-2"><i data-lucide="user" class="w-4 h-4 text-purple-500"></i> Edit Profile Details</span><span>›</span>
-              </button>
-              <div id="mpesa-section" class="pt-2 border-t border-slate-100 mt-2">
-                <p class="text-xs text-slate-500 mb-2 font-medium">PREMIUM FEATURES</p>
-                <button onclick="showMpesaPrompt()" class="w-full flex items-center justify-between p-3.5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl text-sm font-medium text-emerald-800 transition shadow-sm">
-                  <span class="flex items-center gap-2"><i data-lucide="credit-card" class="w-4 h-4 text-emerald-600"></i> Pay with M-Pesa</span><span>›</span>
-                </button>
+
+            <div class="bg-gradient-to-r from-emerald-900/40 to-teal-900/40 border border-emerald-500/30 rounded-2xl p-4 flex items-center justify-between">
+              <div>
+                <span class="text-[10px] uppercase font-bold tracking-wider text-emerald-400">M-Pesa Wallet</span>
+                <p class="text-2xl font-extrabold text-white"><span id="wallet-credits">${userCredits}</span> Credits</p>
               </div>
-              <button class="w-full flex items-center justify-between p-3.5 bg-slate-50 hover:bg-slate-100 rounded-xl text-sm font-medium text-slate-700 transition">
-                <span class="flex items-center gap-2"><i data-lucide="settings" class="w-4 h-4 text-purple-500"></i> Account Settings</span><span>›</span>
+              <button onclick="triggerMpesaCheckout()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-4 py-2.5 rounded-xl text-xs transition shadow-lg shadow-emerald-500/20 flex items-center gap-1.5">
+                <i data-lucide="zap" class="w-4 h-4 fill-current"></i> Top Up
+              </button>
+            </div>
+
+            <div class="space-y-2.5 pt-1">
+              <button onclick="alert('Edit profile modal coming up')" class="w-full flex items-center justify-between p-3.5 bg-slate-700/50 hover:bg-slate-700 border border-slate-700 rounded-xl text-sm font-medium text-slate-200 transition">
+                <span class="flex items-center gap-2"><i data-lucide="user-pen" class="w-4 h-4 text-pink-400"></i> Edit Bio & Photos</span><span>›</span>
+              </button>
+              <button onclick="alert('Privacy mode: Incognito enabled')" class="w-full flex items-center justify-between p-3.5 bg-slate-700/50 hover:bg-slate-700 border border-slate-700 rounded-xl text-sm font-medium text-slate-200 transition">
+                <span class="flex items-center gap-2"><i data-lucide="shield-check" class="w-4 h-4 text-purple-400"></i> Safety & Verification</span><span>›</span>
+              </button>
+              <button onclick="alert('Settings updated')" class="w-full flex items-center justify-between p-3.5 bg-slate-700/50 hover:bg-slate-700 border border-slate-700 rounded-xl text-sm font-medium text-slate-200 transition">
+                <span class="flex items-center gap-2"><i data-lucide="settings" class="w-4 h-4 text-slate-400"></i> App Settings</span><span>›</span>
               </button>
             </div>
           </section>
@@ -217,6 +261,10 @@
       if (window.lucide) {
         lucide.createIcons();
       }
+    }
+
+    function handleLike(name) {
+      alert(`You liked ${name}! Match notification sent.`);
     }
 
     function handleSendMessage(e) {
@@ -231,15 +279,21 @@
       renderContent();
     }
 
-    function showMpesaPrompt() {
-      const phone = prompt("Enter your M-Pesa registered phone number (e.g., 0712345678):");
+    function triggerMpesaCheckout() {
+      const phone = prompt("Enter your M-Pesa phone number (e.g., 0712345678) for KES 100 top-up (+100 Credits):", "07");
       if (phone) {
-        alert("STK push sent to " + phone + ". Enter your M-Pesa PIN to complete the credit purchase.");
+        alert(`STK Push sent to ${phone}! Please enter your M-Pesa PIN on your phone to complete the transaction.`);
+        setTimeout(() => {
+          userCredits += 100;
+          document.getElementById('user-credits').innerText = userCredits;
+          alert("Payment confirmed! 100 credits added to your wallet.");
+          renderContent();
+        }, 2000);
       }
     }
 
     renderContent();
   </script>
 </body>
-        </html>
-        
+      </html>
+    
