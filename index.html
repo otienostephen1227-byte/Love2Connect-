@@ -1,346 +1,665 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Love2Connect - Elite Social Discovery</title>
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- Supabase JS SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#111827">
+<title>Love2Connect — Find Your Connection</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  body{background:#0b1120;color:#f8fafc}
+  .panel{background:#151d30;border:1px solid #293449}
+  .field{width:100%;background:#0b1120;border:1px solid #344054;border-radius:12px;padding:12px;color:white;outline:none}
+  .field:focus{border-color:#ec4899}
+  .primary{background:linear-gradient(100deg,#ec4899,#9333ea);color:white;border-radius:12px;padding:12px;font-weight:700}
+  .muted{color:#a8b3c7}
+  .navbtn{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;color:#9ca3af;padding:8px}
+  .navbtn.active{color:#f472b6}
+  button:disabled{opacity:.5}
+</style>
 </head>
-<body class="bg-slate-900 text-slate-100 pb-24 font-sans antialiased">
-
-  <!-- Top Header -->
-  <header class="sticky top-0 z-20 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 px-4 py-3 flex items-center justify-between">
-    <div class="flex items-center space-x-2">
-      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center shadow-lg shadow-pink-500/20">
-        <i data-lucide="heart" class="w-5 h-5 text-white fill-current"></i>
-      </div>
-      <div>
-        <h1 class="text-base font-bold tracking-tight text-white">Love2Connect</h1>
-        <p id="backend-status" class="text-[10px] text-pink-400 font-medium">Connecting to Supabase...</p>
-      </div>
+<body class="antialiased pb-24">
+<header class="sticky top-0 z-30 bg-slate-950/95 border-b border-slate-800 p-3">
+  <div class="max-w-xl mx-auto flex items-center justify-between gap-3">
+    <div class="flex items-center gap-2">
+      <div class="rounded-xl p-2 bg-pink-600"><i data-lucide="heart"></i></div>
+      <div><h1 class="font-extrabold">Love2Connect</h1><p id="status" class="text-xs muted">Connecting…</p></div>
     </div>
-    <div class="flex items-center space-x-2">
-      <button onclick="switchTab('profile')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-full text-xs font-semibold flex items-center space-x-1.5 transition">
-        <i data-lucide="coins" class="w-3.5 h-3.5 text-amber-400"></i>
-        <span id="user-credits">120</span> Credits
-      </button>
+    <button onclick="openAuth()" class="text-sm border border-slate-700 rounded-xl px-3 py-2">Sign in</button>
+  </div>
+</header>
+
+<main id="app" class="max-w-xl mx-auto p-4 min-h-[80vh]">
+  <div class="panel rounded-2xl p-6 text-center">
+    <h2 class="text-xl font-bold mb-2">Welcome to Love2Connect</h2>
+    <p class="muted text-sm">Loading your connections…</p>
+  </div>
+</main>
+
+<nav class="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-800 bg-slate-950/95">
+  <div class="max-w-xl mx-auto flex justify-around">
+    <button id="nav-discover" class="navbtn active" onclick="switchTab('discover')"><i data-lucide="compass"></i>Discover</button>
+    <button id="nav-likes" class="navbtn" onclick="switchTab('likes')"><i data-lucide="heart"></i>Likes</button>
+    <button id="nav-chat" class="navbtn" onclick="switchTab('chat')"><i data-lucide="message-circle"></i>Chat</button>
+    <button id="nav-profile" class="navbtn" onclick="switchTab('profile')"><i data-lucide="user-round"></i>Profile</button>
+  </div>
+</nav>
+
+<div id="modal" class="hidden fixed inset-0 z-50 bg-black/80 p-4 overflow-y-auto">
+  <div class="panel rounded-2xl p-5 max-w-md mx-auto mt-8">
+    <div class="flex justify-between items-center mb-4">
+      <h2 id="modal-title" class="font-bold text-xl">Sign in</h2>
+      <button onclick="closeModal()" aria-label="Close"><i data-lucide="x"></i></button>
     </div>
-  </header>
+    <div id="modal-body"></div>
+  </div>
+</div>
 
-  <!-- Main Content Area -->
-  <main id="main-content" class="p-4 max-w-md mx-auto w-full min-h-[80vh]">
-    <!-- Dynamic Content -->
-  </main>
+<div id="toast" class="hidden fixed bottom-24 left-4 right-4 z-50 max-w-xl mx-auto bg-slate-800 border border-slate-600 rounded-xl p-3 text-sm"></div>
 
-  <!-- Bottom Navigation Bar -->
-  <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-slate-900/90 backdrop-blur-lg border-t border-slate-800 px-6 py-2.5 flex justify-around items-center z-50">
-    <button onclick="switchTab('discover')" id="nav-discover" class="nav-btn flex flex-col items-center space-y-1 text-pink-500 font-semibold transition">
-      <i data-lucide="sparkles" class="w-5 h-5 stroke-[2.5px]"></i>
-      <span class="text-[10px]">Discover</span>
-    </button>
-    <button onclick="switchTab('chat')" id="nav-chat" class="nav-btn flex flex-col items-center space-y-1 text-slate-400 hover:text-slate-200 transition">
-      <i data-lucide="message-square" class="w-5 h-5 stroke-2"></i>
-      <span class="text-[10px]">Chat</span>
-    </button>
-    <button onclick="switchTab('call')" id="nav-call" class="nav-btn flex flex-col items-center space-y-1 text-slate-400 hover:text-slate-200 transition">
-      <i data-lucide="phone-call" class="w-5 h-5 stroke-2"></i>
-      <span class="text-[10px]">Calls</span>
-    </button>
-    <button onclick="switchTab('profile')" id="nav-profile" class="nav-btn flex flex-col items-center space-y-1 text-slate-400 hover:text-slate-200 transition">
-      <i data-lucide="user" class="w-5 h-5 stroke-2"></i>
-      <span class="text-[10px]">Profile</span>
-    </button>
-  </nav>
+<script>
+'use strict';
 
-  <script>
-    // Supabase Configuration
-    const supabaseUrl = 'https://ycoywnfsfqygubszrzzt.supabase.co';
-    const supabaseAnonKey = 'sb_publishable_240ym7HucnCx-1d3PvuhOg_8ReZALm6';
-    let supabaseClient = null;
+/* Your existing Supabase project */
+const SUPABASE_URL = 'https://ycoywnfsfqygubszrzzt.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_240ym7HucnCx-1d3PvuhOg_8ReZALm6';
 
-    if (supabaseUrl && supabaseAnonKey) {
-      try {
-        supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
-        document.getElementById('backend-status').innerText = '● Live & Secure';
-      } catch (e) {
-        document.getElementById('backend-status').innerText = '● Offline Mode';
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let user = null;
+let myProfile = null;
+let tab = 'discover';
+let selectedChat = null;
+let profiles = [];
+let myLikes = [];
+let myMatches = [];
+let chatMessages = [];
+let realtimeChannel = null;
+let toastTimer = null;
+
+function esc(value='') {
+  return String(value).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+function toast(message) {
+  const el = document.getElementById('toast');
+  el.textContent = message;
+  el.classList.remove('hidden');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.add('hidden'), 3500);
+}
+function icons() {
+  if (window.lucide) lucide.createIcons();
+}
+function setStatus(text) {
+  document.getElementById('status').textContent = text;
+}
+function closeModal() {
+  document.getElementById('modal').classList.add('hidden');
+}
+function showModal(title, html) {
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-body').innerHTML = html;
+  document.getElementById('modal').classList.remove('hidden');
+  icons();
+}
+function ageFromDate(date) {
+  if (!date) return '';
+  const born = new Date(date);
+  if (Number.isNaN(born.getTime())) return '';
+  const today = new Date();
+  let age = today.getFullYear() - born.getFullYear();
+  if (today.getMonth() < born.getMonth() ||
+      (today.getMonth() === born.getMonth() && today.getDate() < born.getDate())) age--;
+  return age;
+}
+function photo(profile) {
+  return profile?.profile_photo_url ||
+    'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=700&q=80';
+}
+
+async function init() {
+  try {
+    const { data, error } = await db.auth.getSession();
+    if (error) throw error;
+    user = data.session?.user || null;
+    await refreshUser();
+    db.auth.onAuthStateChange((_event, session) => {
+      user = session?.user || null;
+      setTimeout(async () => {
+        await refreshUser();
+      }, 0);
+    });
+    setStatus('Supabase connected');
+  } catch (error) {
+    setStatus('Connection issue');
+    toast('Could not connect: ' + error.message);
+    renderError('Cannot connect to Supabase. Check your project URL and public key.');
+  }
+}
+
+async function refreshUser() {
+  if (!user) {
+    myProfile = null;
+    setStatus('Sign in to get started');
+    switchTab('discover');
+    return;
+  }
+  const { data, error } = await db.from('profiles')
+    .select('*').eq('id', user.id).maybeSingle();
+
+  if (error) {
+    setStatus('Signed in');
+    toast('Profile could not load: ' + error.message);
+  } else {
+    myProfile = data;
+    setStatus(data ? 'Signed in' : 'Finish your profile');
+  }
+  await loadLikes();
+  await loadMatches();
+  await render();
+}
+
+function renderError(message) {
+  document.getElementById('app').innerHTML =
+    `<div class="panel rounded-2xl p-5"><h2 class="font-bold text-xl mb-2">Connection problem</h2><p class="muted">${esc(message)}</p></div>`;
+}
+
+function requireUser() {
+  if (user) return true;
+  openAuth();
+  return false;
+}
+
+function openAuth() {
+  showModal('Welcome to Love2Connect', `
+    <p class="muted text-sm mb-4">Sign in or create your account to connect with people.</p>
+    <form id="auth-form" class="space-y-3">
+      <label class="block text-sm">Email
+        <input class="field mt-1" name="email" type="email" autocomplete="email" required>
+      </label>
+      <label class="block text-sm">Password
+        <input class="field mt-1" name="password" type="password" minlength="6" autocomplete="current-password" required>
+      </label>
+      <button class="primary w-full" type="submit">Sign in</button>
+      <button class="w-full border border-slate-600 rounded-xl p-3" type="button" onclick="showSignup()">Create new account</button>
+      <p class="text-xs muted">Use an email you can access. If email confirmation is enabled, confirm your email before signing in.</p>
+    </form>
+  `);
+  document.getElementById('auth-form').onsubmit = async e => {
+    e.preventDefault();
+    const f = new FormData(e.target);
+    const { error } = await db.auth.signInWithPassword({
+      email: f.get('email'), password: f.get('password')
+    });
+    if (error) toast(error.message);
+    else { closeModal(); toast('Signed in successfully.'); }
+  };
+}
+
+function showSignup() {
+  showModal('Create account', `
+    <form id="signup-form" class="space-y-3">
+      <label class="block text-sm">Full name<input class="field mt-1" name="full_name" required maxlength="80"></label>
+      <label class="block text-sm">Username<input class="field mt-1" name="username" required maxlength="30" pattern="[A-Za-z0-9_]+" placeholder="YourUsername"></label>
+      <label class="block text-sm">Date of birth<input class="field mt-1" name="date_of_birth" type="date" required max="${new Date(Date.now()-18*365.25*86400000).toISOString().slice(0,10)}"></label>
+      <label class="block text-sm">Email<input class="field mt-1" name="email" type="email" required></label>
+      <label class="block text-sm">Password<input class="field mt-1" name="password" type="password" minlength="8" required></label>
+      <label class="block text-sm">Location<input class="field mt-1" name="location" placeholder="Nairobi, Kenya"></label>
+      <label class="block text-sm">Gender
+        <select class="field mt-1" name="gender" required>
+          <option value="">Choose</option><option value="male">Male</option><option value="female">Female</option><option value="non-binary">Non-binary</option>
+        </select>
+      </label>
+      <label class="block text-sm">Interested in
+        <select class="field mt-1" name="preferred_gender">
+          <option value="any">Everyone</option><option value="male">Men</option><option value="female">Women</option><option value="non-binary">Non-binary people</option>
+        </select>
+      </label>
+      <button class="primary w-full" type="submit">Create account</button>
+      <p class="text-xs muted">Love2Connect is for adults aged 18 and over.</p>
+    </form>
+  `);
+  document.getElementById('signup-form').onsubmit = async e => {
+    e.preventDefault();
+    const f = new FormData(e.target);
+    if (ageFromDate(f.get('date_of_birth')) < 18) {
+      toast('You must be at least 18 to join.');
+      return;
+    }
+    const { data, error } = await db.auth.signUp({
+      email: f.get('email'),
+      password: f.get('password'),
+      options: { data: { full_name: f.get('full_name') } }
+    });
+    if (error) { toast(error.message); return; }
+    if (!data.user) { toast('Please check your email to continue.'); return; }
+    if (!data.session) {
+      toast('Account created. Confirm your email, then sign in to finish your profile.');
+      closeModal();
+      return;
+    }
+    user = data.user;
+    const { error: profileError } = await db.from('profiles').upsert({
+      id: user.id,
+      full_name: f.get('full_name'),
+      username: f.get('username'),
+      date_of_birth: f.get('date_of_birth'),
+      location: f.get('location'),
+      gender: f.get('gender'),
+      preferred_gender: f.get('preferred_gender'),
+      bio: ''
+    });
+    if (profileError) {
+      toast('Account created, but profile setup failed: ' + profileError.message);
+    } else {
+      toast('Welcome to Love2Connect!');
+    }
+    closeModal();
+    await refreshUser();
+  };
+}
+
+async function loadLikes() {
+  if (!user) { myLikes = []; return; }
+  const { data, error } = await db.from('likes').select('liked_id,created_at').eq('liker_id', user.id);
+  if (!error) myLikes = data || [];
+}
+async function loadMatches() {
+  if (!user) { myMatches = []; return; }
+  const { data, error } = await db.from('matches').select('*')
+    .or(`user_1_id.eq.${user.id},user_2_id.eq.${user.id}`);
+  if (error) {
+    myMatches = [];
+    console.warn('Matches:', error.message);
+  } else myMatches = data || [];
+}
+async function loadDiscover() {
+  if (!user) { profiles = []; return; }
+  const { data, error } = await db.from('profiles').select('*')
+    .neq('id', user.id).order('created_at', { ascending: false }).limit(50);
+  if (error) throw error;
+  const liked = new Set(myLikes.map(x => x.liked_id));
+  profiles = (data || []).filter(p => !liked.has(p.id));
+}
+
+async function render() {
+  const app = document.getElementById('app');
+  document.querySelectorAll('.navbtn').forEach(b => b.classList.remove('active'));
+  document.getElementById('nav-' + tab)?.classList.add('active');
+
+  if (!user) {
+    app.innerHTML = `
+      <section class="space-y-5">
+        <div class="rounded-3xl p-6 bg-gradient-to-br from-pink-700 via-purple-800 to-slate-900">
+          <span class="text-xs uppercase tracking-widest">Real connections start here</span>
+          <h2 class="text-3xl font-extrabold mt-3">Meet someone who gets you.</h2>
+          <p class="mt-3 text-sm text-pink-100">Discover people, share your story and build meaningful connections across Kenya.</p>
+          <button class="bg-white text-purple-800 rounded-xl px-5 py-3 font-bold mt-5" onclick="openAuth()">Join Love2Connect</button>
+        </div>
+        <div class="panel rounded-2xl p-5">
+          <h3 class="font-bold text-lg">Your next chapter starts here</h3>
+          <p class="muted text-sm mt-2">Create an account to view profiles, like people and start conversations.</p>
+        </div>
+        <p class="text-xs muted text-center">Adults 18+ only. Be respectful. Never send money to someone you have not verified.</p>
+      </section>`;
+    icons(); return;
+  }
+
+  if (!myProfile) {
+    app.innerHTML = `
+      <div class="panel rounded-2xl p-5 space-y-4">
+        <h2 class="text-xl font-bold">Finish your profile</h2>
+        <p class="muted text-sm">Add the details needed to appear in discovery.</p>
+        <button class="primary w-full" onclick="editProfile()">Complete profile</button>
+        <button class="w-full border border-slate-600 rounded-xl p-3" onclick="signOut()">Sign out</button>
+      </div>`;
+    icons(); return;
+  }
+
+  try {
+    if (tab === 'discover') await renderDiscover();
+    else if (tab === 'likes') await renderLikes();
+    else if (tab === 'chat') await renderChats();
+    else if (tab === 'profile') await renderProfile();
+  } catch (error) {
+    app.innerHTML = `<div class="panel rounded-2xl p-5"><h2 class="font-bold">Could not load this page</h2><p class="muted text-sm mt-2">${esc(error.message)}</p><button class="primary mt-4" onclick="render()">Try again</button></div>`;
+  }
+  icons();
+}
+
+async function renderDiscover() {
+  await loadDiscover();
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    <div class="flex justify-between items-center mb-4">
+      <div><h2 class="text-2xl font-extrabold">Discover</h2><p class="text-sm muted">People looking for a connection</p></div>
+      <button class="border border-slate-700 rounded-xl p-3" onclick="editProfile()" title="Edit profile"><i data-lucide="sliders-horizontal"></i></button>
+    </div>
+    ${profiles.length ? profiles.map(p => `
+      <article class="panel rounded-3xl overflow-hidden mb-5">
+        <img src="${esc(photo(p))}" alt="Profile photo" class="w-full h-80 object-cover" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=700&q=80'">
+        <div class="p-4">
+          <h3 class="text-2xl font-bold">${esc(p.full_name || p.username || 'Love2Connect member')}${p.date_of_birth ? ', '+ageFromDate(p.date_of_birth) : ''}</h3>
+          <p class="muted text-sm mt-1"><i data-lucide="map-pin" class="inline w-4 h-4"></i> ${esc(p.location || 'Kenya')}</p>
+          <p class="mt-3 text-sm whitespace-pre-wrap">${esc(p.bio || 'Still writing my story. Say hello!')}</p>
+          ${p.interests?.length ? `<div class="flex flex-wrap gap-2 mt-3">${p.interests.map(i=>`<span class="bg-slate-800 rounded-full px-3 py-1 text-xs">${esc(i)}</span>`).join('')}</div>` : ''}
+          <div class="grid grid-cols-2 gap-3 mt-5">
+            <button class="primary" onclick="likeProfile('${p.id}')"><i data-lucide="heart" class="inline w-4 h-4"></i> Like</button>
+            <button class="border border-slate-600 rounded-xl font-semibold" onclick="startChat('${p.id}')"><i data-lucide="message-circle" class="inline w-4 h-4"></i> Message</button>
+          </div>
+          <button class="text-xs muted mt-4 underline" onclick="reportProfile('${p.id}')">Report profile</button>
+        </div>
+      </article>`).join('') : `<div class="panel rounded-2xl p-6 text-center"><h3 class="font-bold">No new profiles yet</h3><p class="muted text-sm mt-2">Check again later as more people join.</p></div>`}`;
+}
+
+async function likeProfile(id) {
+  if (!requireUser()) return;
+  const { error } = await db.from('likes').insert({ liker_id: user.id, liked_id: id });
+  if (error) {
+    toast(error.code === '23505' ? 'You already liked this profile.' : error.message);
+    return;
+  }
+  toast('Like sent!');
+  await loadLikes();
+  await render();
+}
+
+async function renderLikes() {
+  const app = document.getElementById('app');
+  const ids = myLikes.map(l => l.liked_id);
+  let likedProfiles = [];
+  if (ids.length) {
+    const { data, error } = await db.from('profiles').select('*').in('id', ids);
+    if (error) throw error;
+    likedProfiles = data || [];
+  }
+  app.innerHTML = `<h2 class="text-2xl font-extrabold mb-1">Your likes</h2><p class="muted text-sm mb-5">Profiles you have liked.</p>
+    ${likedProfiles.length ? likedProfiles.map(p => `<div class="panel rounded-2xl p-3 flex gap-3 items-center mb-3">
+      <img src="${esc(photo(p))}" class="w-16 h-16 object-cover rounded-xl" alt="Profile photo">
+      <div class="flex-1"><h3 class="font-bold">${esc(p.full_name || p.username || 'Member')}</h3><p class="text-xs muted">${esc(p.location || 'Kenya')}</p></div>
+      <button class="primary text-sm" onclick="startChat('${p.id}')">Chat</button>
+    </div>`).join('') : `<div class="panel rounded-2xl p-5 muted text-sm">You haven't liked anyone yet. Explore profiles to get started.</div>`}`;
+}
+
+async function renderChats() {
+  const app = document.getElementById('app');
+  if (!myMatches.length) {
+    app.innerHTML = `<h2 class="text-2xl font-extrabold mb-4">Messages</h2><div class="panel rounded-2xl p-5"><p class="font-bold">No matches yet</p><p class="muted text-sm mt-2">When two people like each other and a match is created, the conversation will appear here.</p><button class="primary mt-4" onclick="switchTab('discover')">Discover people</button></div>`;
+    return;
+  }
+  const otherIds = myMatches.map(m => m.user_1_id === user.id ? m.user_2_id : m.user_1_id);
+  const { data: people, error } = await db.from('profiles').select('*').in('id', otherIds);
+  if (error) throw error;
+  app.innerHTML = `<h2 class="text-2xl font-extrabold mb-4">Your matches</h2>` + (people || []).map(p => {
+    const match = myMatches.find(m => m.user_1_id === p.id || m.user_2_id === p.id);
+    return `<button class="panel rounded-2xl p-3 flex items-center gap-3 w-full text-left mb-3" onclick="openConversation('${match.id}','${p.id}')">
+      <img src="${esc(photo(p))}" class="w-14 h-14 object-cover rounded-full" alt="">
+      <span class="flex-1"><strong>${esc(p.full_name || p.username || 'Member')}</strong><span class="block text-xs muted mt-1">${esc(p.location || 'Love2Connect member')}</span></span>
+      <i data-lucide="message-circle"></i>
+    </button>`;
+  }).join('');
+}
+
+async function findConversation(matchId) {
+  const { data, error } = await db.from('conversations').select('*').eq('match_id', matchId).maybeSingle();
+  if (error) throw error;
+  if (data) return data;
+  const { data: created, error: createError } = await db.from('conversations').insert({ match_id: matchId }).select().single();
+  if (createError) throw createError;
+  return created;
+}
+
+async function openConversation(matchId, personId) {
+  try {
+    const conversation = await findConversation(matchId);
+    selectedChat = { conversationId: conversation.id, personId };
+    await loadConversationMessages();
+    renderConversation();
+  } catch (error) {
+    toast('Could not open chat: ' + error.message);
+  }
+}
+async function startChat(personId) {
+  if (!requireUser()) return;
+  const match = myMatches.find(m =>
+    (m.user_1_id === user.id && m.user_2_id === personId) ||
+    (m.user_2_id === user.id && m.user_1_id === personId)
+  );
+  if (!match) {
+    toast('Messaging opens after a mutual match.');
+    return;
+  }
+  await openConversation(match.id, personId);
+}
+async function loadConversationMessages() {
+  const { data, error } = await db.from('messages').select('*')
+    .eq('conversation_id', selectedChat.conversationId)
+    .order('created_at', { ascending: true }).limit(200);
+  if (error) throw error;
+  chatMessages = data || [];
+  if (realtimeChannel) await db.removeChannel(realtimeChannel);
+  realtimeChannel = db.channel('chat-' + selectedChat.conversationId)
+    .on('postgres_changes', {
+      event: 'INSERT', schema: 'public', table: 'messages',
+      filter: 'conversation_id=eq.' + selectedChat.conversationId
+    }, payload => {
+      if (!chatMessages.some(m => m.id === payload.new.id)) {
+        chatMessages.push(payload.new);
+        renderConversation();
       }
-    }
+    }).subscribe();
+}
+async function renderConversation() {
+  const { data: person } = await db.from('profiles').select('*')
+    .eq('id', selectedChat.personId).maybeSingle();
+  document.getElementById('app').innerHTML = `
+    <button onclick="selectedChat=null;switchTab('chat')" class="muted text-sm mb-3">← Back to matches</button>
+    <section class="panel rounded-2xl overflow-hidden flex flex-col" style="height:72vh">
+      <div class="p-3 border-b border-slate-700 flex items-center gap-3">
+        <img src="${esc(photo(person))}" class="w-10 h-10 rounded-full object-cover" alt="">
+        <div><strong>${esc(person?.full_name || person?.username || 'Match')}</strong><p class="text-xs muted">Your conversation</p></div>
+      </div>
+      <div id="message-list" class="p-3 flex-1 overflow-y-auto space-y-3">
+        ${chatMessages.map(m => `<div class="flex ${m.sender_id===user.id?'justify-end':'justify-start'}"><div class="${m.sender_id===user.id?'bg-pink-700':'bg-slate-700'} rounded-2xl px-3 py-2 max-w-[85%] text-sm break-words">${esc(m.text)}<div class="text-[10px] opacity-70 mt-1">${new Date(m.created_at).toLocaleString()}</div></div></div>`).join('')}
+      </div>
+      <form id="send-form" class="p-3 border-t border-slate-700 flex gap-2">
+        <input id="message-input" class="field flex-1" maxlength="2000" placeholder="Write a message…" required>
+        <button class="primary" type="submit" aria-label="Send"><i data-lucide="send"></i></button>
+      </form>
+    </section>`;
+  icons();
+  const list = document.getElementById('message-list');
+  list.scrollTop = list.scrollHeight;
+  document.getElementById('send-form').onsubmit = async e => {
+    e.preventDefault();
+    const input = document.getElementById('message-input');
+    const text = input.value.trim();
+    if (!text) return;
+    const { error } = await db.from('messages').insert({
+      conversation_id: selectedChat.conversationId,
+      sender_id: user.id,
+      text
+    });
+    if (error) toast('Message not sent: ' + error.message);
+    else input.value = '';
+  };
+}
 
-    let currentTab = 'discover';
-    let userCredits = 120;
-    let selectedAmount = 50;
-    let selectedPlanName = "Basic Chat (10 Credits)";
+function editProfile() {
+  if (!requireUser()) return;
+  const p = myProfile || {};
+  showModal('Edit your profile', `
+    <form id="profile-form" class="space-y-3">
+      <label class="block text-sm">Full name<input class="field mt-1" name="full_name" maxlength="80" required value="${esc(p.full_name || '')}"></label>
+      <label class="block text-sm">Username<input class="field mt-1" name="username" maxlength="30" pattern="[A-Za-z0-9_]+" required value="${esc(p.username || '')}"></label>
+      <label class="block text-sm">Location<input class="field mt-1" name="location" value="${esc(p.location || '')}"></label>
+      <label class="block text-sm">Profile photo URL<input class="field mt-1" name="profile_photo_url" type="url" placeholder="https://…" value="${esc(p.profile_photo_url || '')}"></label>
+      <label class="block text-sm">About me<textarea class="field mt-1" name="bio" rows="4" maxlength="500" placeholder="Tell people about yourself">${esc(p.bio || '')}</textarea></label>
+      <label class="block text-sm">Interests (separate with commas)<input class="field mt-1" name="interests" value="${esc((p.interests || []).join(', '))}" placeholder="Music, travel, cooking"></label>
+      <label class="block text-sm">Interested in
+        <select class="field mt-1" name="preferred_gender">
+          <option value="any" ${p.preferred_gender==='any'?'selected':''}>Everyone</option>
+          <option value="male" ${p.preferred_gender==='male'?'selected':''}>Men</option>
+          <option value="female" ${p.preferred_gender==='female'?'selected':''}>Women</option>
+          <option value="non-binary" ${p.preferred_gender==='non-binary'?'selected':''}>Non-binary people</option>
+        </select>
+      </label>
+      <button class="primary w-full">Save profile</button>
+    </form>`);
+  document.getElementById('profile-form').onsubmit = async e => {
+    e.preventDefault();
+    const f = new FormData(e.target);
+    const updates = {
+      id: user.id,
+      full_name: f.get('full_name'),
+      username: f.get('username'),
+      location: f.get('location'),
+      profile_photo_url: f.get('profile_photo_url') || null,
+      bio: f.get('bio'),
+      interests: String(f.get('interests') || '').split(',').map(s=>s.trim()).filter(Boolean).slice(0,30),
+      preferred_gender: f.get('preferred_gender'),
+      updated_at: new Date().toISOString()
+    };
+    const { data, error } = await db.from('profiles').upsert(updates).select().single();
+    if (error) { toast('Profile not saved: ' + error.message); return; }
+    myProfile = data;
+    closeModal();
+    toast('Profile saved.');
+    await render();
+  };
+}
 
-    let profiles = [
-      { id: 1, name: 'Chloe', age: 24, location: 'Nairobi, Kenya', img: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80', bio: 'Adventurous spirit, coffee addict & weekend hiker. Let’s explore Nairobi together!', verified: true },
-      { id: 2, name: 'Liam', age: 27, location: 'Mombasa, Kenya', img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80', bio: 'Tech founder & beach lover. Looking for genuine intellectual chemistry.', verified: true },
-      { id: 3, name: 'Sofia', age: 25, location: 'Kisumu, Kenya', img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=600&q=80', bio: 'Art director, foodie, and music enthusiast. Good vibes only ✨', verified: false }
-    ];
+async function renderProfile() {
+  const p = myProfile;
+  const app = document.getElementById('app');
+  const { data: wallet, error: walletError } = await db.from('wallets')
+    .select('credits').eq('user_id', user.id).maybeSingle();
+  const credits = walletError ? '—' : (wallet?.credits ?? 0);
+  app.innerHTML = `
+    <section class="panel rounded-3xl p-5">
+      <div class="text-center">
+        <img src="${esc(photo(p))}" class="w-24 h-24 rounded-full object-cover mx-auto border-4 border-pink-500" alt="Your profile photo">
+        <h2 class="text-2xl font-extrabold mt-3">${esc(p.full_name || p.username || 'Your profile')}</h2>
+        <p class="muted text-sm mt-1">${esc(p.location || 'Add your location')}</p>
+        <p class="text-sm mt-3">${esc(p.bio || 'Add a bio to introduce yourself.')}</p>
+        <button class="primary mt-4 w-full" onclick="editProfile()"><i data-lucide="user-pen" class="inline w-4 h-4"></i> Edit profile</button>
+      </div>
+    </section>
+    <section class="panel rounded-2xl p-4 mt-4">
+      <h3 class="font-bold text-lg">M-Pesa wallet</h3>
+      <p class="text-3xl font-extrabold mt-2">${esc(credits)} <span class="text-sm muted">credits</span></p>
+      <p class="text-xs muted mt-2">Credits are displayed from your database wallet.</p>
+      <div class="grid grid-cols-3 gap-2 mt-4">
+        <button class="border border-slate-600 rounded-xl p-3" onclick="choosePayment(50)">KES 50</button>
+        <button class="border border-slate-600 rounded-xl p-3" onclick="choosePayment(200)">KES 200</button>
+        <button class="border border-slate-600 rounded-xl p-3" onclick="choosePayment(500)">KES 500</button>
+      </div>
+      <p class="text-xs muted mt-3">Payments remain disabled until a secure M-Pesa server function is installed and configured.</p>
+    </section>
+    <section class="panel rounded-2xl p-4 mt-4 space-y-3">
+      <h3 class="font-bold">Account & safety</h3>
+      <button class="w-full text-left border border-slate-700 rounded-xl p-3" onclick="showPrivacy()">Privacy and safety</button>
+      <button class="w-full text-left border border-slate-700 rounded-xl p-3" onclick="showSettings()">Account settings</button>
+      <button class="w-full text-left border border-red-900 text-red-300 rounded-xl p-3" onclick="signOut()">Sign out</button>
+    </section>`;
+}
 
-    let messages = [
-      { id: 1, sender: 'Chloe', text: 'Hey Stephen! Welcome to Love2Connect 👋', time: '14:20', isMe: false },
-      { id: 2, sender: 'You', text: 'Hi Chloe! Excited to connect with amazing people here.', time: '14:22', isMe: true },
-    ];
+function choosePayment(amount) {
+  showModal('M-Pesa top-up', `
+    <p class="muted text-sm mb-4">Selected amount: <strong class="text-white">KES ${amount}</strong></p>
+    <label class="block text-sm">M-Pesa phone number
+      <input id="mpesa-phone" class="field mt-1" type="tel" inputmode="tel" placeholder="07XXXXXXXX or 2547XXXXXXXX">
+    </label>
+    <button class="primary w-full mt-4" onclick="requestPayment(${amount})">Continue</button>
+    <p class="text-xs muted mt-3">No money will be requested until the secure payment service is configured.</p>`);
+}
+async function requestPayment(amount) {
+  const phone = document.getElementById('mpesa-phone')?.value.trim();
+  if (!phone) { toast('Enter your M-Pesa phone number.'); return; }
+  toast('M-Pesa checkout is not installed yet. No payment has been made.');
+  /* Connect this button only after creating a secure Netlify Function:
+     /.netlify/functions/mpesa-stk-push
+     Never place Daraja consumer secrets in this HTML file. */
+}
 
-    function switchTab(tab) {
-      currentTab = tab;
-      
-      document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.className = "nav-btn flex flex-col items-center space-y-1 text-slate-400 hover:text-slate-200 transition";
-        let icon = btn.querySelector('i');
-        if (icon) {
-          icon.classList.remove('stroke-[2.5px]', 'text-pink-500');
-          icon.classList.add('stroke-2');
-        }
-      });
+async function reportProfile(id) {
+  if (!requireUser()) return;
+  showModal('Report profile', `
+    <form id="report-form" class="space-y-3">
+      <label class="block text-sm">Reason
+        <select class="field mt-1" name="reason" required>
+          <option value="fake_profile">Fake profile</option>
+          <option value="harassment">Harassment</option>
+          <option value="scam">Scam or requests for money</option>
+          <option value="inappropriate_content">Inappropriate content</option>
+          <option value="other">Other</option>
+        </select>
+      </label>
+      <label class="block text-sm">Details<textarea class="field mt-1" name="description" maxlength="1000" rows="3"></textarea></label>
+      <button class="primary w-full">Submit report</button>
+    </form>`);
+  document.getElementById('report-form').onsubmit = async e => {
+    e.preventDefault();
+    const f = new FormData(e.target);
+    const { error } = await db.from('reports').insert({
+      reporter_id: user.id, reported_id: id,
+      reason: f.get('reason'), description: f.get('description')
+    });
+    if (error) toast('Report not submitted: ' + error.message);
+    else { closeModal(); toast('Report submitted. Thank you.'); }
+  };
+}
 
-      const activeBtn = document.getElementById(`nav-${tab}`);
-      if (activeBtn) {
-        activeBtn.className = "nav-btn flex flex-col items-center space-y-1 text-pink-500 font-semibold transition";
-        let activeIcon = activeBtn.querySelector('i');
-        if (activeIcon) {
-          activeIcon.classList.remove('stroke-2');
-          activeIcon.classList.add('stroke-[2.5px]');
-        }
-      }
+function showPrivacy() {
+  showModal('Privacy & safety', `
+    <div class="space-y-3 text-sm">
+      <p>• Never share passwords, verification codes or financial information.</p>
+      <p>• Be cautious if someone asks you to send them money.</p>
+      <p>• Meet new people in public places and tell someone you trust.</p>
+      <p>• Report suspicious profiles using the report option on a profile.</p>
+    </div>`);
+}
+function showSettings() {
+  showModal('Account settings', `
+    <div class="space-y-3">
+      <p class="muted text-sm">Signed in as ${esc(user?.email || '')}</p>
+      <button class="w-full border border-slate-600 rounded-xl p-3" onclick="resetPassword()">Send password reset email</button>
+      <button class="w-full border border-red-900 text-red-300 rounded-xl p-3" onclick="signOut()">Sign out</button>
+    </div>`);
+}
+async function resetPassword() {
+  if (!user?.email) return;
+  const { error } = await db.auth.resetPasswordForEmail(user.email, {
+    redirectTo: location.origin
+  });
+  if (error) toast(error.message);
+  else toast('Password reset email requested. Check your inbox.');
+}
+async function signOut() {
+  if (realtimeChannel) await db.removeChannel(realtimeChannel);
+  const { error } = await db.auth.signOut();
+  if (error) toast(error.message);
+  else {
+    user = null; myProfile = null; selectedChat = null;
+    closeModal();
+    toast('You have signed out.');
+    switchTab('discover');
+  }
+}
+function switchTab(next) {
+  tab = next;
+  selectedChat = null;
+  render();
+}
 
-      renderContent();
-    }
-
-    function selectPackage(amount, planName) {
-      selectedAmount = amount;
-      selectedPlanName = planName;
-      const label = document.getElementById("selected-plan-label");
-      if (label) {
-        label.textContent = `${planName} - KES ${amount}`;
-      }
-    }
-
-    function renderContent() {
-      const main = document.getElementById('main-content');
-      if (!main) return;
-      
-      if (currentTab === 'discover') {
-        main.innerHTML = `
-          <section class="space-y-4">
-            <div class="flex items-center justify-between">
-              <div>
-                <h2 class="text-xl font-extrabold tracking-tight text-white">Discover Matches</h2>
-                <p class="text-xs text-slate-400">Verified profiles near you in Kenya</p>
-              </div>
-              <button onclick="alert('Filters: Showing nearby active users')" class="p-2 bg-slate-800 border border-slate-700 rounded-xl text-slate-300 hover:text-white transition">
-                <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
-              </button>
-            </div>
-
-            <div class="space-y-6">
-              ${profiles.map(p => `
-                <div class="bg-slate-800/60 border border-slate-700/80 rounded-3xl overflow-hidden shadow-xl backdrop-blur-sm">
-                  <div class="relative h-80 w-full">
-                    <img src="${p.img}" alt="${p.name}" class="w-full h-full object-cover" />
-                    <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/20 to-transparent"></div>
-                    ${p.verified ? '<span class="absolute top-4 left-4 bg-blue-500/90 text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-md"><i data-lucide="badge-check" class="w-3 h-3"></i> Verified</span>' : ''}
-                    <div class="absolute bottom-4 left-4 right-4">
-                      <h3 class="text-2xl font-bold text-white flex items-center gap-2">${p.name},${p.age}</h3>
-                      <p class="text-xs text-slate-300 flex items-center gap-1 mt-0.5"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-pink-400"></i> ${p.location}</p>
-                    </div>
-                  </div>
-                  <div class="p-4 space-y-4">
-                    <p class="text-sm text-slate-300 leading-relaxed">${p.bio}</p>
-                    <div class="flex gap-3 pt-1">
-                      <button onclick="handleLike('${p.name}')" class="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold py-3 rounded-2xl text-sm transition shadow-lg shadow-pink-500/25 flex items-center justify-center gap-2">
-                        <i data-lucide="heart" class="w-4 h-4 fill-current"></i> Like Profile
-                      </button>
-                      <button onclick="switchTab('chat')" class="px-5 bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 rounded-2xl text-sm transition flex items-center justify-center">
-                        <i data-lucide="message-square" class="w-4 h-4"></i>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              `).join('')}
-            </div>
-          </section>
-        `;
-      } else if (currentTab === 'chat') {
-        main.innerHTML = `
-          <section class="bg-slate-800/60 border border-slate-700/80 rounded-3xl flex flex-col h-[78vh] shadow-xl overflow-hidden backdrop-blur-sm">
-            <div class="p-4 border-b border-slate-700/80 flex items-center justify-between bg-slate-800/90">
-              <div class="flex items-center space-x-3">
-                <div class="relative">
-                  <img src="${profiles[0].img}" class="w-10 h-10 rounded-full object-cover border border-pink-500" />
-                  <span class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-slate-800 rounded-full"></span>
-                </div>
-                <div>
-                  <h3 class="font-bold text-white text-sm">Chloe</h3>
-                  <span class="text-[10px] text-emerald-400 font-medium">Active now</span>
-                </div>
-              </div>
-              <div class="flex items-center space-x-1">
-                <button onclick="switchTab('call')" class="p-2.5 bg-slate-700 hover:bg-slate-600 rounded-xl text-pink-400 transition">
-                  <i data-lucide="video" class="w-4 h-4"></i>
-                </button>
-              </div>
-            </div>
-
-            <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3">
-              ${messages.map(msg => `
-                <div class="flex ${msg.isMe ? 'justify-end' : 'justify-start'}">
-                  <div class="max-w-[80%] rounded-2xl px-4 py-3 text-sm ${msg.isMe ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-br-none shadow-md' : 'bg-slate-700 text-slate-100 rounded-bl-none'}">
-                    <p>${msg.text}</p>
-                    <span class="text-[9px] block mt-1 ${msg.isMe ? 'text-pink-200 text-right' : 'text-slate-400'}">${msg.time}</span>
-                  </div>
-                </div>
-              `).join('')}
-            </div>
-
-            <form onsubmit="handleSendMessage(event)" class="p-3 border-t border-slate-700/80 bg-slate-800/90 flex items-center space-x-2">
-              <input type="text" id="msg-input" placeholder="Type a message..." class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-pink-500" />
-              <button type="submit" class="p-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl hover:opacity-90 transition shadow-md">
-                <i data-lucide="send" class="w-4 h-4"></i>
-              </button>
-            </form>
-          </section>
-        `;
-        const chatContainer = document.getElementById('chat-messages');
-        if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
-      } else if (currentTab === 'call') {
-        main.innerHTML = `
-          <section class="bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 border border-slate-700/80 rounded-3xl p-6 flex flex-col items-center justify-between text-center min-h-[78vh] shadow-2xl">
-            <div class="space-y-1 mt-4">
-              <span class="text-[10px] uppercase tracking-widest text-pink-400 font-bold px-3 py-1 bg-pink-500/10 rounded-full border border-pink-500/20">Secure WebRTC Call</span>
-              <h2 class="text-2xl font-bold text-white mt-2">Chloe</h2>
-              <p class="text-xs text-slate-400">Encrypted HD Voice & Video</p>
-            </div>
-
-            <div class="relative my-8">
-              <div class="absolute -inset-4 rounded-full bg-pink-500/20 blur-xl animate-pulse"></div>
-              <img src="${profiles[0].img}" class="relative w-36 h-36 rounded-full object-cover border-4 border-pink-500 shadow-2xl" />
-            </div>
-
-            <div class="w-full space-y-4 mb-4">
-              <div class="flex items-center justify-center space-x-6">
-                <button onclick="alert('Mic toggled')" class="p-4 bg-slate-800 hover:bg-slate-700 rounded-full text-white border border-slate-700 transition shadow-lg"><i data-lucide="mic" class="w-5 h-5"></i></button>
-                <button onclick="alert('Call ended')" class="p-5 bg-red-500 hover:bg-red-600 rounded-full text-white shadow-xl shadow-red-500/30 transform hover:scale-105 transition"><i data-lucide="phone-off" class="w-6 h-6"></i></button>
-                <button onclick="alert('Camera toggled')" class="p-4 bg-slate-800 hover:bg-slate-700 rounded-full text-white border border-slate-700 transition shadow-lg"><i data-lucide="video" class="w-5 h-5"></i></button>
-              </div>
-            </div>
-          </section>
-        `;
-      } else if (currentTab === 'profile') {
-        main.innerHTML = `
-          <section class="bg-slate-800/60 border border-slate-700/80 rounded-3xl p-6 space-y-6 backdrop-blur-sm shadow-xl">
-            <div class="flex flex-col items-center text-center space-y-3">
-              <div class="w-24 h-24 rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 p-1 shadow-xl">
-                <div class="w-full h-full rounded-full bg-slate-900 flex items-center justify-center text-3xl font-extrabold text-white">U</div>
-              </div>
-              <div>
-                <h2 class="text-xl font-bold text-white">Your Profile</h2>
-                <p class="text-xs text-emerald-400 font-medium flex items-center justify-center gap-1 mt-1">● Supabase Auth Active</p>
-              </div>
-            </div>
-
-            <div class="bg-gradient-to-r from-emerald-900/40 to-teal-900/40 border border-emerald-500/30 rounded-2xl p-4 flex items-center justify-between">
-              <div>
-                <span class="text-[10px] uppercase font-bold tracking-wider text-emerald-400">M-Pesa Wallet</span>
-                <p class="text-2xl font-extrabold text-white"><span id="wallet-credits">${userCredits}</span> Credits</p>
-              </div>
-            </div>
-
-            <!-- M-Pesa Package Top-Up Section -->
-            <div class="bg-slate-900/80 border border-slate-700/80 rounded-2xl p-4 space-y-3">
-              <h3 class="text-sm font-bold text-white flex items-center gap-2">
-                <i data-lucide="zap" class="w-4 h-4 text-emerald-400"></i> Renew Packages & Credits
-              </h3>
-              <p class="text-[11px] text-slate-400">Choose a package for chats, calls, or VIP access:</p>
-              
-              <div class="grid grid-cols-3 gap-2">
-                <button type="button" onclick="selectPackage(50, 'Basic Chat')" class="p-2.5 rounded-xl border border-pink-500/50 bg-slate-800 text-center hover:border-pink-500 transition cursor-pointer">
-                  <div class="text-[10px] text-slate-400">Basic</div>
-                  <div class="text-sm font-bold text-white">KES 50</div>
-                  <div class="text-[9px] text-pink-400 mt-0.5">10 Chats</div>
-                </button>
-                <button type="button" onclick="selectPackage(200, 'Voice Calls')" class="p-2.5 rounded-xl border border-slate-700 bg-slate-800 text-center hover:border-pink-500 transition cursor-pointer">
-                  <div class="text-[10px] text-slate-400">Calls</div>
-                  <div class="text-sm font-bold text-white">KES 200</div>
-                  <div class="text-[9px] text-pink-400 mt-0.5">30 Mins</div>
-                </button>
-                <button type="button" onclick="selectPackage(500, 'VIP Unlimited')" class="p-2.5 rounded-xl border border-slate-700 bg-slate-800 text-center hover:border-pink-500 transition cursor-pointer">
-                  <div class="text-[10px] text-slate-400">VIP</div>
-                  <div class="text-sm font-bold text-white">KES 500</div>
-                  <div class="text-[9px] text-pink-400 mt-0.5">Unlimited</div>
-                </button>
-              </div>
-
-              <div class="flex justify-between items-center text-xs pt-1 px-1">
-                <span class="text-slate-400">Selected:</span>
-                <span id="selected-plan-label" class="font-bold text-pink-400">${selectedPlanName} (KES ${selectedAmount})</span>
-              </div>
-
-              <div>
-                <label for="phone-input" class="block text-[10px] font-medium text-slate-400 mb-1">M-Pesa Phone Number</label>
-                <input 
-                  type="text" 
-                  id="phone-input" 
-                  placeholder="0712345678 or 0112345678" 
-                  class="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-pink-500 text-xs"
-                />
-              </div>
-
-              <button 
-                id="pay-btn" 
-                onclick="handleMpesaCheckout()" 
-                class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition duration-200 shadow-lg shadow-emerald-600/20 text-xs cursor-pointer">
-                Pay via M-Pesa STK Push
-              </button>
-            </div>
-
-            <div class="space-y-2.5 pt-1">
-              <button onclick="alert('Edit profile modal coming up')" class="w-full flex items-center justify-between p-3.5 bg-slate-700/50 hover:bg-slate-700 border border-slate-700 rounded-xl text-sm font-medium text-slate-200 transition">
-                <span class="flex items-center gap-2"><i data-lucide="user-pen" class="w-4 h-4 text-pink-400"></i> Edit Bio & Photos</span><span>›</span>
-              </button>
-              <button onclick="alert('Privacy mode: Incognito enabled')" class="w-full flex items-center justify-between p-3.5 bg-slate-700/50 hover:bg-slate-700 border border-slate-700 rounded-xl text-sm font-medium text-slate-200 transition">
-                <span class="flex items-center gap-2"><i data-lucide="shield-check" class="w-4 h-4 text-purple-400"></i> Safety & Verification</span><span>›</span>
-              </button>
-              <button onclick="alert('Settings updated')" class="w-full flex items-center justify-between p-3.5 bg-slate-700/50 hover:bg-slate-700 border border-slate-700 rounded-xl text-sm font-medium text-slate-200 transition">
-                <span class="flex items-center gap-2"><i data-lucide="settings" class="w-4 h-4 text-slate-400"></i> App Settings</span><span>›</span>
-              </button>
-            </div>
-          </section>
-        `;
-      }
-
-      if (window.lucide) {
-        lucide.createIcons();
-      }
-    }
-
-    function handleLike(name) {
-      alert(`You liked ${name}! Match notification sent.`);
-    }
-
-    function handleSendMessage(e) {
-      e.preventDefault();
-      const input = document.getElementById('msg-input');
-      if (!input) return;
-      const text = input.value.trim();
-      if (!text) return;
-
-      messages.push({ id: Date.now(), sender: 'You', text: text, time: 'Just now', isMe: true });
-      input.value = '';
-      renderContent();
-    }
-
-    
-    async function handleMpesaCheckout() {
-      alert("M-Pesa payments are not available yet. No payment has been made.");
-    }
-  </script>
+document.addEventListener('DOMContentLoaded', init);
+</script>
 </body>
 </html>
+
 
