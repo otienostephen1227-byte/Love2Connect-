@@ -74,22 +74,29 @@
       document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.className = "nav-btn flex flex-col items-center space-y-1 text-slate-400 hover:text-slate-600 transition";
         let icon = btn.querySelector('i');
-        icon.classList.remove('stroke-[2.5px]');
-        icon.classList.add('stroke-2');
+        if (icon) {
+          icon.classList.remove('stroke-[2.5px]');
+          icon.classList.add('stroke-2');
+        }
         btn.classList.remove('scale-105', 'text-pink-600', 'font-semibold');
       });
 
       const activeBtn = document.getElementById(`nav-${tab}`);
-      activeBtn.className = "nav-btn flex flex-col items-center space-y-1 text-pink-600 font-semibold scale-105 transition";
-      let activeIcon = activeBtn.querySelector('i');
-      activeIcon.classList.remove('stroke-2');
-      activeIcon.classList.add('stroke-[2.5px]');
+      if (activeBtn) {
+        activeBtn.className = "nav-btn flex flex-col items-center space-y-1 text-pink-600 font-semibold scale-105 transition";
+        let activeIcon = activeBtn.querySelector('i');
+        if (activeIcon) {
+          activeIcon.classList.remove('stroke-2');
+          activeIcon.classList.add('stroke-[2.5px]');
+        }
+      }
 
       renderContent();
     }
 
     function renderContent() {
       const main = document.getElementById('main-content');
+      if (!main) return;
       
       if (currentTab === 'discover') {
         main.innerHTML = `
@@ -159,7 +166,7 @@
           </section>
         `;
         const chatContainer = document.getElementById('chat-messages');
-        chatContainer.scrollTop = chatContainer.scrollHeight;
+        if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
       } else if (currentTab === 'call') {
         main.innerHTML = `
           <section class="bg-gradient-to-b from-slate-900 to-slate-800 text-white rounded-3xl p-8 flex flex-col items-center justify-between text-center min-h-[70vh] shadow-xl">
@@ -193,9 +200,12 @@
               <button class="w-full flex items-center justify-between p-3.5 bg-slate-50 hover:bg-slate-100 rounded-xl text-sm font-medium text-slate-700 transition">
                 <span class="flex items-center gap-2"><i data-lucide="user" class="w-4 h-4 text-purple-500"></i> Edit Profile Details</span><span>›</span>
               </button>
-              <button onclick="alert('M-Pesa integration coming up next for VIP messaging & matches!')" class="w-full flex items-center justify-between p-3.5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl text-sm font-medium text-emerald-800 transition">
-                <span class="flex items-center gap-2"><i data-lucide="credit-card" class="w-4 h-4 text-emerald-600"></i> Buy Credits (M-Pesa)</span><span>›</span>
-              </button>
+              <div id="mpesa-section" class="pt-2 border-t border-slate-100 mt-2">
+                <p class="text-xs text-slate-500 mb-2 font-medium">PREMIUM FEATURES</p>
+                <button onclick="showMpesaPrompt()" class="w-full flex items-center justify-between p-3.5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl text-sm font-medium text-emerald-800 transition shadow-sm">
+                  <span class="flex items-center gap-2"><i data-lucide="credit-card" class="w-4 h-4 text-emerald-600"></i> Pay with M-Pesa</span><span>›</span>
+                </button>
+              </div>
               <button class="w-full flex items-center justify-between p-3.5 bg-slate-50 hover:bg-slate-100 rounded-xl text-sm font-medium text-slate-700 transition">
                 <span class="flex items-center gap-2"><i data-lucide="settings" class="w-4 h-4 text-purple-500"></i> Account Settings</span><span>›</span>
               </button>
@@ -204,12 +214,15 @@
         `;
       }
 
-      lucide.createIcons();
+      if (window.lucide) {
+        lucide.createIcons();
+      }
     }
 
     function handleSendMessage(e) {
       e.preventDefault();
       const input = document.getElementById('msg-input');
+      if (!input) return;
       const text = input.value.trim();
       if (!text) return;
 
@@ -218,8 +231,15 @@
       renderContent();
     }
 
+    function showMpesaPrompt() {
+      const phone = prompt("Enter your M-Pesa registered phone number (e.g., 0712345678):");
+      if (phone) {
+        alert("STK push sent to " + phone + ". Enter your M-Pesa PIN to complete the credit purchase.");
+      }
+    }
+
     renderContent();
   </script>
 </body>
-</html>
-
+        </html>
+        
