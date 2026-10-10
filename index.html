@@ -1,74 +1,661 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0b0b16"><title>Love2Connect — Meet. Connect. Belong.</title>
-<script defer src="https://cdn.tailwindcss.com"></script><script defer src="https://unpkg.com/lucide@latest"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0b16">
+<title>Love2Connect — Meet. Connect. Belong.</title>
+<script defer src="https://cdn.tailwindcss.com"></script>
+<script defer src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script defer src="https://unpkg.com/lucide@latest"></script>
 <style>
-*{box-sizing:border-box}body{background:#0b0b16;color:#f8fafc}.glass{background:#151527ed;backdrop-filter:blur(16px)}.grad{background:linear-gradient(120deg,#ec4899,#9333ea)}.field{width:100%;background:#0d1020;border:1px solid #34364d;border-radius:14px;padding:13px;color:white;outline:none}.field:focus{border-color:#ec4899;box-shadow:0 0 0 2px #ec489933}.btn{border-radius:14px;padding:12px 14px;font-weight:700}.primary{background:linear-gradient(120deg,#ec4899,#9333ea);color:white}.secondary{background:#25263d;border:1px solid #3a3b52}.active{color:#f472b6}.demo{background:#78350f55;color:#fcd34d;border:1px solid #f59e0b55}.hidefile{position:absolute;width:1px;height:1px;opacity:0}
+*{box-sizing:border-box}
+body{background:#0b0b16;color:#f8fafc}
+.glass{background:#151527ed;backdrop-filter:blur(16px)}
+.grad{background:linear-gradient(120deg,#ec4899,#9333ea)}
+.field{width:100%;background:#0d1020;border:1px solid #343640;border-radius:14px;padding:13px;color:white;outline:none;font-size:1rem}
+.field:focus{border-color:#ec4899;box-shadow:0 0 0 2px #ec489933}
+.btn{border-radius:14px;padding:12px 14px;font-weight:700;border:none;cursor:pointer}
+.primary{background:linear-gradient(120deg,#ec4899,#9333ea);color:white}
+.secondary{background:#25263d;border:1px solid #3a3b52;color:#f8fafc}
+.active{color:#f472b6}
+.demo{background:#78350f55;color:#fcd34d;border:1px solid #f59e0b55}
+.hidefile{position:absolute;width:1px;height:1px;opacity:0}
+.nav{transition:all 0.2s}
 </style>
 </head>
 <body class="min-h-screen antialiased pb-24">
-<header class="sticky top-0 z-30 glass border-b border-white/10"><div class="max-w-5xl mx-auto p-3 flex items-center justify-between gap-3">
-<button onclick="tab('discover')" class="flex items-center gap-3 text-left"><span class="w-11 h-11 rounded-2xl grad flex items-center justify-center"><i data-lucide="heart"></i></span><span><b class="block">Love2Connect</b><small id="status" class="text-xs text-slate-400">Connecting…</small></span></button>
-<div class="flex gap-2"><button class="btn secondary text-xs" onclick="tab('profile')">Credits: <span id="credits">—</span></button><button id="authbtn" class="btn primary text-xs" onclick="authOpen()">Sign in</button></div></div></header>
+<header class="sticky top-0 z-30 glass border-b border-white/10">
+<div class="max-w-5xl mx-auto p-3 flex items-center justify-between gap-3">
+<button onclick="tab('discover')" class="flex items-center gap-3 text-left hover:opacity-80">
+<span class="w-11 h-11 rounded-2xl grad flex items-center justify-center"><i data-lucide="heart"></i></span>
+<span><b class="block">Love2Connect</b><small id="status" class="text-xs text-slate-400">Connecting…</small></span>
+</button>
+<div class="flex gap-2">
+<button class="btn secondary text-xs" onclick="tab('profile')">Credits: <span id="credits">—</span></button>
+<button id="authbtn" class="btn primary text-xs" onclick="authOpen()">Sign in</button>
+</div>
+</div>
+</header>
+
 <main id="app" class="max-w-5xl mx-auto px-4 py-5 min-h-[78vh]"></main>
-<nav class="fixed bottom-0 left-0 right-0 z-40 glass border-t border-white/10"><div class="max-w-xl mx-auto flex justify-around p-2">
-<button id="n-discover" onclick="tab('discover')" class="nav active p-2 flex flex-col items-center gap-1"><i data-lucide="compass"></i><small>Discover</small></button>
-<button id="n-likes" onclick="tab('likes')" class="nav p-2 text-slate-400 flex flex-col items-center gap-1"><i data-lucide="heart"></i><small>Likes</small></button>
-<button id="n-chat" onclick="tab('chat')" class="nav p-2 text-slate-400 flex flex-col items-center gap-1"><i data-lucide="message-circle"></i><small>Chat</small></button>
-<button id="n-profile" onclick="tab('profile')" class="nav p-2 text-slate-400 flex flex-col items-center gap-1"><i data-lucide="user-round"></i><small>Profile</small></button>
-</div></nav><div id="modal"></div><div id="toast" class="hidden fixed z-[90] bottom-24 left-4 right-4 max-w-md mx-auto p-4 rounded-2xl bg-slate-800 border border-white/10 text-sm" role="status"></div>
+
+<nav class="fixed bottom-0 left-0 right-0 z-40 glass border-t border-white/10">
+<div class="max-w-xl mx-auto flex justify-around p-2">
+<button id="n-discover" onclick="tab('discover')" class="nav active p-2 flex flex-col items-center gap-1 hover:opacity-80"><i data-lucide="compass"></i><small>Discover</small></button>
+<button id="n-likes" onclick="tab('likes')" class="nav p-2 text-slate-400 flex flex-col items-center gap-1 hover:opacity-80"><i data-lucide="heart"></i><small>Likes</small></button>
+<button id="n-chat" onclick="tab('chat')" class="nav p-2 text-slate-400 flex flex-col items-center gap-1 hover:opacity-80"><i data-lucide="message-circle"></i><small>Chat</small></button>
+<button id="n-profile" onclick="tab('profile')" class="nav p-2 text-slate-400 flex flex-col items-center gap-1 hover:opacity-80"><i data-lucide="user-round"></i><small>Profile</small></button>
+</div>
+</nav>
+
+<div id="modal"></div>
+<div id="toast" class="hidden fixed z-[90] bottom-24 left-4 right-4 max-w-md mx-auto p-4 rounded-2xl bg-slate-800 border border-white/10 text-sm" role="status"></div>
+
 <script>
 'use strict';
-// Supabase publishable key is browser-safe; database security must be enforced by RLS.
-const URL='https://ycoywnfsfqygubszrzzt.supabase.co', KEY='sb_publishable_240ym7HucnCx-1d3PvuhOg_8ReZALm6';
+
+// Supabase configuration - browser-safe public key only
+const URL='https://ycoywnfsfqygubszrzzt.supabase.co';
+const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inljb3l3bmZzZnF5Z3Vic3pyenh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzAzMzk2NjksImV4cCI6MTk0Nzk0OTY2OX0.Pz1Z2VnCxE5YnbXjQjKcXR8VnY7kXb8Ps-6aLzPjxSI';
+
 let sb=window.supabase?.createClient?window.supabase.createClient(URL,KEY):null;
-const $=id=>document.getElementById(id), esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let current='discover',session=null,me=null,wallet=null,people=[],picked=null,preview='',conversation=null,authMode='in';
+
+// DOM helpers
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+// App state
+let current='discover',session=null,me=null,wallet=null,people=[],preview='',conversation=null,authMode='in';
+
+// Demo profiles - clearly marked as samples
 const demos=[
-['Amani Wanjiku','Nairobi, Kenya','Rooftop sunsets, live music, trying new restaurants and meaningful conversations. Tell me your favourite place in the city.','1998-06-12',['Music','Food','Travel'],'photo-1534528741775-53994a69daeb'],
+['Amani Wanjiku','Nairobi, Kenya','Rooftop sunsets, live music, trying new restaurants and meaningful conversations. Tell me your favourite place in the city.','1998-06-12',['Music','Food','Travel'],'photo-1534528741775-53987933ba0f'],
 ['Jabari Mwangi','Mombasa, Kenya','Coastal soul who enjoys ocean walks, football, Swahili food and weekend adventures. Kindness and humour matter to me.','1996-02-18',['Beach','Football','Cooking'],'photo-1507003211169-0a1dd7228f2d'],
-['Nia Achieng','Kisumu, Kenya','Creative, curious and happiest around Lake Victoria. I enjoy photography, dancing and discovering little cafés.','2000-09-04',['Photography','Dancing','Art'],'photo-1531123897727-8f129e1688ce'],
+['Nia Achieng','Kisumu, Kenya','Creative, curious and happiest around Lake Victoria. I enjoy photography, dancing and discovering little cafés.','2000-09-04',['Photography','Dancing','Art'],'photo-1531123897727-8f129e127b6e'],
 ['Kofi Otieno','Nakuru, Kenya','Nature lover, gym beginner and enthusiastic road-trip planner. I value honesty, family and laughter.','1995-11-23',['Nature','Fitness','Road trips'],'photo-1500648767791-00dcc994a43e'],
 ['Zuri Njeri','Ongata Rongai, Kenya','A book lover who dances while cooking and never says no to a spontaneous coffee date.','1999-03-15',['Books','Coffee','Dance'],'photo-1524504388940-b1c1722653e1'],
-['Tendaji Kiptoo','Eldoret, Kenya','Outdoors most weekends, especially for a run or a mountain view. I enjoy calm people and sharing good food.','1997-07-08',['Running','Outdoors','Food'],'photo-1531384441138-2736e62e0919'],
-['Wairimu Kamau','Nyeri, Kenya','Mountain air, farmers markets and soulful playlists are my kind of weekend. I appreciate honesty.','1998-12-01',['Music','Nature','Cooking'],'photo-1517841905240-472988babdf9'],
+['Tendaji Kiptoo','Eldoret, Kenya','Outdoors most weekends, especially for a run or a mountain view. I enjoy calm people and sharing good food.','1997-07-08',['Running','Outdoors','Food'],'photo-1531384440585-fbde19db3674'],
+['Wairimu Kamau','Nyeri, Kenya','Mountain air, farmers markets and soulful playlists are my kind of weekend. I appreciate honesty.','1998-12-01',['Music','Nature','Cooking'],'photo-1517841905240-472b3cef248d'],
 ['Malik Barasa','Kakamega, Kenya','Easy-going, ambitious and always ready to learn something new. I enjoy basketball and community projects.','1994-05-27',['Basketball','Community','Tech'],'photo-1506794778202-cad84cf45f1d'],
-['Imani Mutua','Machakos, Kenya','A bright spirit who loves fashion, art and exploring new places. Looking for a respectful connection.','2001-01-19',['Fashion','Art','Travel'],'photo-1529139574466-a303027c1d8b'],
-['Ayo Muriuki','Meru, Kenya','Tea, hiking trails and conversations beyond small talk. I believe the best connections start with being yourself.','1996-08-30',['Hiking','Tea','Culture'],'photo-1519085360753-af0119f7cbe7'],
-['Amina Nakato','Kampala, Uganda','I enjoy live music, lakeside walks, good conversation and discovering new places around the city.','1998-04-11',['Music','Travel','Food'],'photo-1534528741775-53994a69daeb'],
+['Imani Mutua','Machakos, Kenya','A bright spirit who loves fashion, art and exploring new places. Looking for a respectful connection.','2001-01-19',['Fashion','Art','Travel'],'photo-1529139664113-febe69a30a23'],
+['Ayo Muriuki','Meru, Kenya','Tea, hiking trails and conversations beyond small talk. I believe the best connections start with being yourself.','1996-08-30',['Hiking','Tea','Culture'],'photo-1519085100606-28ca2d7e4b43'],
+['Amina Nakato','Kampala, Uganda','I enjoy live music, lakeside walks, good conversation and discovering new places around the city.','1998-04-11',['Music','Travel','Food'],'photo-1534528741775-53987933ba0f'],
 ['Baraka Mushi','Arusha, Tanzania','Nature lover who enjoys mountain views, Swahili culture, photography and relaxed weekend adventures.','1995-10-02',['Nature','Photography','Culture'],'photo-1507003211169-0a1dd7228f2d'],
-['Ineza Uwase','Kigali, Rwanda','Curious, kind and always learning. I love art, coffee shops, cycling and meaningful conversations.','1999-02-14',['Art','Coffee','Cycling'],'photo-1531123897727-8f129e1688ce'],
+['Ineza Uwase','Kigali, Rwanda','Curious, kind and always learning. I love art, coffee shops, cycling and meaningful conversations.','1999-02-14',['Art','Coffee','Cycling'],'photo-1531123897727-8f129e127b6e'],
 ['Ama Mensah','Accra, Ghana','I love dancing, trying local food, beach sunsets and people who can laugh at themselves.','1997-07-19',['Dance','Food','Beach'],'photo-1524504388940-b1c1722653e1'],
 ['Chidi Okafor','Lagos, Nigeria','Creative professional who enjoys books, Afrobeats, new restaurants and ambitious but grounded people.','1994-12-06',['Books','Music','Food'],'photo-1500648767791-00dcc994a43e'],
-['Lerato Dlamini','Johannesburg, South Africa','I enjoy hiking, design, weekend markets and meeting people who care about their community.','1998-08-21',['Design','Hiking','Community'],'photo-1517841905240-472988babdf9']
+['Lerato Dlamini','Johannesburg, South Africa','I enjoy hiking, design, weekend markets and meeting people who care about their community.','1998-08-21',['Design','Hiking','Community'],'photo-1517841905240-472b3cef248d']
 ].map((p,i)=>({id:'sample'+i,full_name:p[0],location:p[1],bio:p[2],date_of_birth:p[3],interests:p[4],profile_photo_url:'https://images.unsplash.com/'+p[5]+'?auto=format&fit=crop&w=900&q=85',is_demo:true}));
-function toast(s,err=false){$('toast').textContent=s;$('toast').className='fixed z-[90] bottom-24 left-4 right-4 max-w-md mx-auto p-4 rounded-2xl border text-sm '+(err?'bg-red-950 border-red-500/30':'bg-slate-800 border-white/10');setTimeout(()=>$('toast').classList.add('hidden'),4500)}
-function icons(){window.lucide&&lucide.createIcons()}
-function age(d){if(!d)return null;let b=new Date(d+'T00:00:00');if(isNaN(+b))return null;let n=new Date(),a=n.getFullYear()-b.getFullYear();if(n.getMonth()<b.getMonth()||(n.getMonth()===b.getMonth()&&n.getDate()<b.getDate()))a--;return a}
-function header(){ $('authbtn').textContent=session?'Sign out':'Sign in';$('authbtn').onclick=session?logout:authOpen;$('credits').textContent=wallet?.credits??'—';}
-async function init(){if(!sb){$('status').textContent='Supabase SDK unavailable';render();return}try{let r=await sb.auth.getSession();session=r.data.session;if(r.error)throw r.error;sb.auth.onAuthStateChange((_e,s)=>{session=s;setTimeout(async()=>{await loadMine();header();render();},0)});await loadMine();let ping=await sb.from('profiles').select('id').limit(1);$('status').textContent=ping.error?'Connected · check database access':'Supabase connected';$('status').className='text-xs '+(ping.error?'text-amber-300':'text-emerald-400')}catch(e){$('status').textContent='Connection needs attention'}header();render()}
-async function loadMine(){me=null;wallet=null;if(!session)return;let p=await sb.from('profiles').select('*').eq('id',session.user.id).maybeSingle();me=p.data||null;let w=await sb.from('wallets').select('credits').eq('user_id',session.user.id).maybeSingle();wallet=w.data||null}
-function tab(t){current=t;document.querySelectorAll('.nav').forEach(b=>{b.classList.remove('active');b.classList.add('text-slate-400')});$('n-'+t)?.classList.add('active');$('n-'+t)?.classList.remove('text-slate-400');render()}window.tab=tab;
-function authOpen(){if(session){logout();return}authMode='in';$('modal').innerHTML=`<div class="fixed inset-0 z-[70] bg-black/80 p-4 flex items-center justify-center"><div class="bg-slate-900 border border-white/10 rounded-3xl p-5 w-full max-w-md"><div class="flex justify-between mb-4"><h2 class="text-xl font-bold">Welcome to Love2Connect</h2><button onclick="closeModal()"><i data-lucide="x"></i></button></div><p class="text-sm text-slate-400 mb-4">Create an account to meet people. You must be at least 18.</p><div class="grid grid-cols-2 gap-2 mb-4"><button id="modein" class="btn primary" onclick="setMode('in')">Sign in</button><button id="modeup" class="btn secondary" onclick="setMode('up')">Create account</button></div><form onsubmit="authSubmit(event)" class="space-y-3"><div id="namewrap" class="hidden"><label class="text-sm">Full name<input id="authname" class="field mt-1" required></label></div><label class="text-sm">Email<input id="email" class="field mt-1" type="email" required autocomplete="email"></label><label class="text-sm">Password<input id="password" class="field mt-1" type="password" minlength="8" required autocomplete="current-password"></label><button id="authsubmit" class="btn primary w-full">Sign in</button><button type="button" class="w-full text-sm text-pink-300 p-2" onclick="resetPassword()">Forgot password?</button></form></div></div>`;icons()}
-window.closeModal=()=>$('modal').innerHTML='';
-window.setMode=m=>{authMode=m;$('namewrap').classList.toggle('hidden',m!=='up');$('modein').className='btn '+(m==='in'?'primary':'secondary');$('modeup').className='btn '+(m==='up'?'primary':'secondary');$('authsubmit').textContent=m==='in'?'Sign in':'Create account';$('authname').required=m==='up';$('password').autocomplete=m==='in'?'current-password':'new-password'};
-window.authSubmit=async e=>{e.preventDefault();let b=$('authsubmit');b.disabled=true;try{let email=$('email').value.trim(),password=$('password').value;if(authMode==='up'){let name=$('authname').value.trim();if(!name)throw Error('Enter your name');let r=await sb.auth.signUp({email,password,options:{data:{full_name:name}}});if(r.error)throw r.error;if(r.data.session){session=r.data.session;closeModal();await loadMine();tab('profile')}else{closeModal();toast('Check your email to confirm your account, then sign in.')}}else{let r=await sb.auth.signInWithPassword({email,password});if(r.error)throw r.error;session=r.data.session;closeModal();await loadMine();tab(me?'discover':'profile');toast('Signed in successfully')}}catch(e){toast(e.message||'Authentication failed',true)}finally{b.disabled=false;header()}};
-window.resetPassword=async()=>{let email=$('email')?.value.trim();if(!email)return toast('Enter your email first');let r=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin});toast(r.error?r.error.message:'If the account exists, a reset link will be sent.',!!r.error)};
-async function logout(){let r=await sb.auth.signOut();if(r.error)toast(r.error.message,true);else{session=null;me=null;wallet=null;tab('discover')}header()}
-function render(){if(current==='discover')discover();else if(current==='profile')profile();else if(current==='likes')likes();else chat()}
-async function discover(){
- const app=$('app');
- // Render sample cards immediately so a slow or unavailable database never leaves a blank page.
- const show=(found=[])=>{if(current!=='discover')return;app.innerHTML=`<section class="space-y-5"><div class="rounded-3xl p-5 border border-pink-400/20 bg-gradient-to-br from-pink-950/70 via-slate-900 to-purple-950/60"><span class="text-xs uppercase tracking-widest text-pink-300 font-bold">Meet. Connect. Belong.</span><h1 class="text-2xl sm:text-3xl font-extrabold mt-2">Your next good conversation starts here.</h1><p class="text-sm text-slate-300 mt-2">Discover stories and cultures from across Africa. Be kind, curious and yourself.</p>${!session?'<button class="btn primary mt-4" onclick="authOpen()">Create your profile →</button>':!me?'<button class="btn primary mt-4" onclick="tab(\'profile\')">Finish your profile →</button>':''}</div><div class="flex justify-between items-end"><div><h2 class="text-xl font-bold">Discover people</h2><p class="text-sm text-slate-400">Different regions, stories and interests</p></div><small class="text-slate-400">${found.length} members · ${demos.length} samples</small></div><div class="grid sm:grid-cols-2 gap-5">${[...found,...demos].map(card).join('')}</div><p class="text-xs text-slate-500">Sample profiles and portraits are illustrative demonstrations, not real members. They cannot receive likes or messages.</p></section>`;icons()};
- people=[];show([]);
- if(!sb)return;
- try{let q=sb.from('profiles').select('id,full_name,username,date_of_birth,bio,location,gender,preferred_gender,interests,verified,profile_photo_url,created_at').limit(60);if(session)q=q.neq('id',session.user.id);let r=await q.order('created_at',{ascending:false});if(!r.error){people=(r.data||[]).map(p=>({...p,is_demo:false}));show(people)}}catch(e){/* Keep the sample profiles visible when Supabase is unreachable. */}
+
+// UI helpers
+function toast(s,err=false){
+  $('toast').textContent=s;
+  $('toast').className='fixed z-[90] bottom-24 left-4 right-4 max-w-md mx-auto p-4 rounded-2xl border text-sm '+(err?'bg-red-950 border-red-500/30 text-red-100':'bg-slate-800 border-white/10');
+  $('toast').classList.remove('hidden');
+  setTimeout(()=>$('toast').classList.add('hidden'),4500);
 }
-function card(p){let a=age(p.date_of_birth);return `<article class="rounded-3xl overflow-hidden border border-white/10 bg-slate-900 shadow-xl"><div class="relative h-80 bg-slate-800"><img src="${esc(p.profile_photo_url)}" alt="${esc(p.is_demo?'Illustrative sample portrait':(p.full_name||'Member')+' profile photo')}" class="w-full h-full object-cover" loading="lazy" onerror="this.style.display='none'"><div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-black/20"></div>${p.is_demo?'<span class="demo absolute top-3 left-3 rounded-full px-3 py-1 text-[10px] font-bold">SAMPLE PROFILE</span>':p.verified?'<span class="absolute top-3 left-3 bg-blue-600 rounded-full px-3 py-1 text-xs">Verified</span>':''}<div class="absolute bottom-4 left-4"><h3 class="text-2xl font-extrabold">${esc(p.full_name||p.username||'Member')}${a>=18?', '+a:''}</h3><p class="text-sm text-slate-200">📍 ${esc(p.location||'Location not added')}</p></div></div><div class="p-4 space-y-3"><p class="text-sm text-slate-300">${esc(p.bio||'Still writing my introduction.')}</p><div class="flex flex-wrap gap-2">${(Array.isArray(p.interests)?p.interests:[]).slice(0,5).map(i=>`<span class="rounded-full bg-slate-800 px-3 py-1 text-xs">${esc(i)}</span>`).join('')}</div>${p.is_demo?'<div class="demo rounded-xl p-3 text-xs">Illustration only — cannot receive likes or messages.</div>':`<div class="flex gap-2"><button class="btn primary flex-1" onclick="like('${esc(p.id)}')">♥ Like</button><button class="btn secondary" onclick="message('${esc(p.id)}')">Chat</button></div>`}</div></article>`}
-window.like=async id=>{if(!session)return authOpen();if(!me)return toast('Finish your profile first');let r=await sb.from('likes').insert({liker_id:session.user.id,liked_id:id});toast(r.error?(r.error.code==='23505'?'Already liked this profile.':'Could not save like. Check database policies.'):'Like saved! If they like you back, you can match.',!!r.error)};
-window.message=async id=>{if(!session)return authOpen();let r=await sb.from('matches').select('id,user_1_id,user_2_id').or(`user_1_id.eq.${session.user.id},user_2_id.eq.${session.user.id}`);if(r.error)return toast('Could not load matches.',true);let m=(r.data||[]).find(x=>x.user_1_id===id||x.user_2_id===id);if(!m)return toast('You can chat after a mutual match. Send a like first.');let c=await sb.from('conversations').select('id').eq('match_id',m.id).maybeSingle();if(c.error||!c.data)return toast('Conversation is not set up for this match yet.');conversation=c.data.id;tab('chat')};
-async function likes(){let app=$('app');if(!session){app.innerHTML=required('Sign in to see likes and matches.');icons();return}app.innerHTML='<p>Loading likes…</p>';let uid=session.user.id;let [inc,out,mat]=await Promise.all([sb.from('likes').select('liker_id').eq('liked_id',uid),sb.from('likes').select('liked_id').eq('liker_id',uid),sb.from('matches').select('id,user_1_id,user_2_id').or(`user_1_id.eq.${uid},user_2_id.eq.${uid}`)]);if(current!=='likes')return;let ids=[...new Set([...(inc.data||[]).map(x=>x.liker_id),...(out.data||[]).map(x=>x.liked_id),...(mat.data||[]).map(m=>m.user_1_id===uid?m.user_2_id:m.user_1_id)])],ps=[];if(ids.length){let r=await sb.from('profiles').select('id,full_name,username,location,profile_photo_url').in('id',ids);ps=r.data||[]}let rows=ps.map(p=>`<div class="flex items-center gap-3 py-3 border-t border-white/5"><img src="${esc(p.profile_photo_url)}" class="w-12 h-12 rounded-full object-cover bg-slate-700"><div class="flex-1"><b>${esc(p.full_name||p.username)}</b><p class="text-xs text-slate-400">${esc(p.location||'')}</p></div><button class="btn secondary text-xs" onclick="message('${esc(p.id)}')">Chat</button></div>`).join('');app.innerHTML=`<h1 class="text-2xl font-extrabold mb-4">Likes & Matches</h1><section class="rounded-2xl bg-slate-900 border border-white/10 p-4"><h2 class="font-bold mb-2">People who liked you / your connections</h2>${rows||'<p class="text-sm text-slate-400">No likes or matches yet. Keep discovering!</p>'}</section>`;icons()}
-function required(msg){return `<section class="rounded-3xl bg-slate-900 border border-white/10 p-6 text-center"><i data-lucide="lock-keyhole" class="mx-auto w-10 h-10 text-pink-300"></i><h2 class="text-xl font-bold mt-3">Sign in required</h2><p class="text-sm text-slate-400 mt-2">${esc(msg)}</p><button class="btn primary mt-4" onclick="authOpen()">Sign in / Create account</button></section>`}
-async function chat(){let app=$('app');if(!session){app.innerHTML=required('Sign in to chat with your matches.');icons();return}app.innerHTML='<p class="text-slate-400">Loading conversations…</p>';let uid=session.user.id,r=await sb.from('matches').select('id,user_1_id,user_2_id').or(`user_1_id.eq.${uid},user_2_id.eq.${uid}`);if(r.error){app.innerHTML='<p class="text-amber-200">Could not load matches. Review your Supabase policies.</p>';return}let ms=r.data||[];if(!ms.length){app.innerHTML='<section class="rounded-3xl bg-slate-900 border border-white/10 p-6 text-center"><h2 class="text-xl font-bold">Chat starts with a match</h2><p class="text-sm text-slate-400 mt-2">When you and another real member like each other, you can chat.</p><button class="btn primary mt-4" onclick="tab(\'discover\')">Discover people</button></section>';return}let cr=await sb.from('conversations').select('id,match_id').in('match_id',ms.map(m=>m.id));if(cr.error){app.innerHTML='<p class="text-amber-200">Could not load conversations. Review RLS policies.</p>';return}let convs=cr.data||[];if(!conversation||!convs.some(c=>c.id===conversation))conversation=convs[0]?.id||null;if(!conversation){app.innerHTML='<p class="text-slate-400">Matches exist, but conversations need to be created by secure database logic.</p>';return}let mr=await sb.from('messages').select('id,sender_id,text,created_at').
+
+function icons(){
+  if(window.lucide) lucide.createIcons();
+}
+
+function age(d){
+  if(!d) return null;
+  let b=new Date(d+'T00:00:00');
+  if(isNaN(+b)) return null;
+  let n=new Date(),a=n.getFullYear()-b.getFullYear();
+  if(n.getMonth()<b.getMonth()||(n.getMonth()===b.getMonth()&&n.getDate()<b.getDate())) a--;
+  return a>=0?a:null;
+}
+
+function header(){
+  $('authbtn').textContent=session?'Sign out':'Sign in';
+  $('authbtn').onclick=session?logout:authOpen;
+  $('credits').textContent=wallet?.credits??'—';
+}
+
+async function init(){
+  if(!sb){
+    $('status').textContent='Supabase SDK unavailable';
+    render();
+    return;
+  }
+  try{
+    let r=await sb.auth.getSession();
+    session=r.data.session;
+    if(r.error) throw r.error;
+    sb.auth.onAuthStateChange((_e,s)=>{
+      session=s;
+      setTimeout(async()=>{
+        await loadMine();
+        header();
+        render();
+      },0);
+    });
+    await loadMine();
+    let ping=await sb.from('profiles').select('id').limit(1);
+    $('status').textContent=ping.error?'Connected ⚠ database access issue':'Love2Connect ready';
+    $('status').className='text-xs '+(ping.error?'text-amber-300':'text-emerald-400');
+  }catch(e){
+    $('status').textContent='Connection issue';
+  }
+  header();
+  render();
+}
+
+async function loadMine(){
+  me=null;
+  wallet=null;
+  if(!session) return;
+  try{
+    let p=await sb.from('profiles').select('*').eq('id',session.user.id).maybeSingle();
+    me=p.data||null;
+    let w=await sb.from('wallets').select('credits').eq('user_id',session.user.id).maybeSingle();
+    wallet=w.data||null;
+  }catch(e){
+    console.error('loadMine error:',e);
+  }
+}
+
+function tab(t){
+  current=t;
+  document.querySelectorAll('.nav').forEach(b=>{
+    b.classList.remove('active');
+    b.classList.add('text-slate-400');
+  });
+  $('n-'+t)?.classList.add('active');
+  $('n-'+t)?.classList.remove('text-slate-400');
+  render();
+}
+
+function authOpen(){
+  if(session){
+    logout();
+    return;
+  }
+  authMode='in';
+  $('modal').innerHTML=`<div class="fixed inset-0 z-[70] bg-black/80 p-4 flex items-center justify-center"><div class="bg-slate-900 border border-white/10 rounded-3xl p-5 w-full max-w-md">
+  <div class="flex justify-between mb-4">
+    <h2 class="text-xl font-bold">Welcome to Love2Connect</h2>
+    <button onclick="closeModal()" class="hover:opacity-80"><i data-lucide="x"></i></button>
+  </div>
+  <p class="text-sm text-slate-400 mb-4">Create an account to meet people. You must be at least 18.</p>
+  <div class="grid grid-cols-2 gap-2 mb-4">
+    <button id="modein" class="btn primary" onclick="setMode('in')">Sign in</button>
+    <button id="modeup" class="btn secondary" onclick="setMode('up')">Create account</button>
+  </div>
+  <form onsubmit="authSubmit(event)" class="space-y-3">
+    <div id="namewrap" class="hidden">
+      <label class="text-sm block">Full name
+        <input id="authname" class="field mt-1" required>
+      </label>
+    </div>
+    <label class="text-sm block">Email
+      <input id="email" class="field mt-1" type="email" required autocomplete="email">
+    </label>
+    <label class="text-sm block">Password
+      <input id="password" class="field mt-1" type="password" minlength="8" required autocomplete="current-password">
+    </label>
+    <button id="authsubmit" class="btn primary w-full">Sign in</button>
+    <button type="button" class="w-full text-sm text-pink-300 p-2 hover:opacity-80" onclick="resetPassword()">Forgot password?</button>
+  </form>
+  </div></div>`;
+  icons();
+}
+
+window.closeModal=()=>$('modal').innerHTML='';
+
+window.setMode=m=>{
+  authMode=m;
+  $('namewrap').classList.toggle('hidden',m!=='up');
+  $('modein').className='btn '+(m==='in'?'primary':'secondary');
+  $('modeup').className='btn '+(m==='up'?'primary':'secondary');
+  $('authsubmit').textContent=m==='in'?'Sign in':'Create account';
+  $('authname').required=m==='up';
+  $('password').autocomplete=m==='in'?'current-password':'new-password';
+};
+
+window.authSubmit=async e=>{
+  e.preventDefault();
+  let b=$('authsubmit');
+  b.disabled=true;
+  try{
+    let email=$('email').value.trim(),password=$('password').value;
+    if(authMode==='up'){
+      let name=$('authname').value.trim();
+      if(!name) throw Error('Enter your name');
+      let r=await sb.auth.signUp({email,password,options:{data:{full_name:name}}});
+      if(r.error) throw r.error;
+      if(r.data.session){
+        session=r.data.session;
+        closeModal();
+        await loadMine();
+        tab('profile');
+      }else{
+        closeModal();
+        toast('Check your email to confirm your account, then sign in.');
+      }
+    }else{
+      let r=await sb.auth.signInWithPassword({email,password});
+      if(r.error) throw r.error;
+      session=r.data.session;
+      closeModal();
+      await loadMine();
+      tab(me?'discover':'profile');
+      toast('Signed in successfully!');
+    }
+  }catch(e){
+    toast(e.message||'Authentication failed',true);
+  }finally{
+    b.disabled=false;
+    header();
+  }
+};
+
+window.resetPassword=async()=>{
+  let email=$('email')?.value.trim();
+  if(!email) return toast('Enter your email first');
+  let r=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin});
+  toast(r.error?r.error.message:'If the account exists, a reset link will be sent.',!r.error);
+};
+
+async function logout(){
+  let r=await sb.auth.signOut();
+  if(r.error) toast(r.error.message,true);
+  else{
+    session=null;
+    me=null;
+    wallet=null;
+    tab('discover');
+  }
+  header();
+}
+
+function render(){
+  if(current==='discover') discover();
+  else if(current==='profile') profile();
+  else if(current==='likes') likes();
+  else chat();
+}
+
+async function discover(){
+  const app=$('app');
+  const show=(found=[])=>{
+    if(current!=='discover') return;
+    app.innerHTML=`<section class="space-y-5">
+    <div class="rounded-3xl p-5 border border-pink-400/20 bg-gradient-to-br from-pink-950/70 via-slate-900 to-purple-950/60">
+      <span class="text-xs uppercase tracking-widest text-pink-300 font-bold">Meet. Connect. Belong.</span>
+      <h1 class="text-2xl sm:text-3xl font-extrabold mt-2">Your next good conversation starts here.</h1>
+      <p class="text-sm text-slate-300 mt-2">Discover stories and cultures from across Africa. Be kind, curious and yourself.</p>
+      ${!session?'<button class="btn primary mt-4" onclick="authOpen()">Create your profile 👋</button>':!me?'<button class="btn primary mt-4" onclick="tab(\'profile\')">Finish your profile 👋</button>':''}
+    </div>
+    <div class="flex justify-between items-end">
+      <div>
+        <h2 class="text-xl font-bold">Discover people</h2>
+        <p class="text-sm text-slate-400">Different regions, stories and interests</p>
+      </div>
+      <small class="text-slate-400">${found.length} members · ${demos.length} samples</small>
+    </div>
+    <div class="grid sm:grid-cols-2 gap-5">
+      ${[...found,...demos].map(card).join('')}
+    </div>
+    <p class="text-xs text-slate-500">Sample profiles and portraits are illustrative demonstrations, not real members. They cannot receive likes or messages.</p>
+    </section>`;
+    icons();
+  };
+  people=[];
+  show([]);
+  if(!sb) return;
+  try{
+    let q=sb.from('profiles').select('id,full_name,username,date_of_birth,bio,location,gender,preferred_gender,interests,verified,profile_photo_url,created_at').limit(60);
+    if(session) q=q.neq('id',session.user.id);
+    let r=await q.order('created_at',{ascending:false});
+    if(!r.error){
+      people=(r.data||[]).map(p=>({...p,is_demo:false}));
+      show(people);
+    }
+  }catch(e){
+    console.error('discover error:',e);
+  }
+}
+
+function card(p){
+  let a=age(p.date_of_birth);
+  return `<article class="rounded-3xl overflow-hidden border border-white/10 bg-slate-900 shadow-xl">
+  <div class="relative h-80 bg-slate-800">
+    <img src="${esc(p.profile_photo_url)}" alt="${esc(p.is_demo?'Sample profile':'Member profile')}" class="w-full h-full object-cover" loading="lazy" onerror="this.style.display='none'">
+    <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-black/20"></div>
+    ${p.is_demo?'<span class="demo absolute top-3 left-3 rounded-full px-3 py-1 text-[10px] font-bold">SAMPLE</span>':p.verified?'<span class="absolute top-3 left-3 bg-blue-600 rounded-full px-3 py-1 text-xs">Verified</span>':''}
+    <div class="absolute bottom-4 left-4">
+      <h3 class="text-2xl font-extrabold">${esc(p.full_name||p.username||'Member')}${a&&a>=18?', '+a:''}</h3>
+      <p class="text-sm text-slate-200">📍 ${esc(p.location||'Location not set')}</p>
+    </div>
+  </div>
+  <div class="p-4 space-y-3">
+    <p class="text-sm text-slate-300">${esc(p.bio||'Still writing my introduction.')}</p>
+    <div class="flex flex-wrap gap-2">
+      ${(Array.isArray(p.interests)?p.interests:[]).slice(0,5).map(i=>'<span class="rounded-full bg-slate-800 px-3 py-1 text-xs">'+esc(i)+'</span>').join('')}
+    </div>
+    ${p.is_demo?'<div class="demo rounded-xl p-3 text-xs">Illustration only — cannot receive likes or messages.</div>':`<div class="flex gap-2">
+      <button class="btn primary flex-1" onclick="like('${esc(p.id)}')">💗 Like</button>
+      <button class="btn secondary" onclick="message('${esc(p.id)}')">Chat</button>
+    </div>`}
+  </div>
+  </article>`;
+}
+
+window.like=async id=>{
+  if(!session) return authOpen();
+  if(!me) return toast('Finish your profile first');
+  if(demos.find(d=>d.id===id)) return toast('Sample profiles cannot be liked',true);
+  try{
+    let r=await sb.from('likes').insert({liker_id:session.user.id,liked_id:id});
+    toast(r.error?(r.error.code==='23505'?'Already liked this profile.':'Error: '+r.error.message):'Like saved! If they like you back, you can match',!!r.error);
+  }catch(e){
+    toast('Like failed: '+e.message,true);
+  }
+};
+
+window.message=async id=>{
+  if(!session) return authOpen();
+  if(demos.find(d=>d.id===id)) return toast('Cannot message sample profiles',true);
+  try{
+    let r=await sb.from('matches').select('id,user_1_id,user_2_id').or(`user_1_id.eq.${session.user.id},user_2_id.eq.${session.user.id}`);
+    if(r.error) return toast('Error loading matches: '+r.error.message,true);
+    let m=(r.data||[]).find(x=>x.user_1_id===id||x.user_2_id===id);
+    if(!m) return toast('You can chat after a mutual match. Send a like first.');
+    let c=await sb.from('conversations').select('id').eq('match_id',m.id).maybeSingle();
+    if(c.error||!c.data) return toast('Conversation setup needed. Contact support.');
+    conversation=c.data.id;
+    tab('chat');
+  }catch(e){
+    toast('Message error: '+e.message,true);
+  }
+};
+
+async function likes(){
+  let app=$('app');
+  if(!session){
+    app.innerHTML=required('Sign in to see likes and matches.');
+    icons();
+    return;
+  }
+  app.innerHTML='<p>Loading likes…</p>';
+  try{
+    let uid=session.user.id;
+    let [inc,out,mat]=await Promise.all([
+      sb.from('likes').select('liker_id').eq('liked_id',uid),
+      sb.from('likes').select('liked_id').eq('liker_id',uid),
+      sb.from('matches').select('id,user_1_id,user_2_id').or(`user_1_id.eq.${uid},user_2_id.eq.${uid}`)
+    ]);
+    if(current!=='likes') return;
+    let ids=[...new Set([
+      ...(inc.data||[]).map(x=>x.liker_id),
+      ...(out.data||[]).map(x=>x.liked_id),
+      ...(mat.data||[]).map(m=>m.user_1_id===uid?m.user_2_id:m.user_1_id)
+    ])];
+    let ps=[];
+    if(ids.length){
+      let r=await sb.from('profiles').select('id,full_name,username,location,profile_photo_url').in('id',ids);
+      ps=r.data||[];
+    }
+    let rows=ps.map(p=>'<div class="flex items-center gap-3 py-3 border-t border-white/5"><img src="'+esc(p.profile_photo_url)+'" class="w-12 h-12 rounded-full object-cover bg-slate-700"><div class="flex-1"><b>'+esc(p.full_name||p.username)+'</b><p class="text-xs text-slate-400">'+esc(p.location||'')+'</p></div><button class="btn secondary text-xs" onclick="message(\''+esc(p.id)+'\')">Chat</button></div>').join('');
+    app.innerHTML='<h1 class="text-2xl font-extrabold mb-4">Likes & Matches</h1><section class="rounded-2xl bg-slate-900 border border-white/10 p-4"><h2 class="font-bold mb-2">People who liked you / your connections</h2>'+(rows||'<p class="text-sm text-slate-400">No likes or matches yet. Keep discovering!</p>')+'</section>';
+    icons();
+  }catch(e){
+    app.innerHTML='<p class="text-red-300">Error loading likes: '+esc(e.message)+'</p>';
+  }
+}
+
+function required(msg){
+  return `<section class="rounded-3xl bg-slate-900 border border-white/10 p-6 text-center">
+  <i data-lucide="lock-keyhole" class="mx-auto w-10 h-10 text-pink-300"></i>
+  <h2 class="text-xl font-bold mt-3">Sign in required</h2>
+  <p class="text-sm text-slate-400 mt-2">${esc(msg)}</p>
+  <button class="btn primary mt-4" onclick="authOpen()">Sign in / Create account</button>
+  </section>`;
+}
+
+async function chat(){
+  let app=$('app');
+  if(!session){
+    app.innerHTML=required('Sign in to chat with your matches.');
+    icons();
+    return;
+  }
+  app.innerHTML='<p class="text-slate-400">Loading conversations…</p>';
+  try{
+    let uid=session.user.id;
+    let r=await sb.from('matches').select('id,user_1_id,user_2_id').or(`user_1_id.eq.${uid},user_2_id.eq.${uid}`);
+    if(r.error){
+      app.innerHTML='<p class="text-amber-200">Error loading matches. Check database policies.</p>';
+      return;
+    }
+    let ms=r.data||[];
+    if(!ms.length){
+      app.innerHTML='<section class="rounded-3xl bg-slate-900 border border-white/10 p-6 text-center"><h2 class="text-xl font-bold">Chat starts with a match</h2><p class="text-sm text-slate-400 mt-2">When you and another real member like each other, you can chat.</p><button class="btn primary mt-4" onclick="tab(\'discover\')">Discover people</button></section>';
+      return;
+    }
+    let cr=await sb.from('conversations').select('id,match_id').in('match_id',ms.map(m=>m.id));
+    let convs=cr.data||[];
+    if(!conversation||!convs.some(c=>c.id===conversation)) conversation=convs[0]?.id||null;
+    if(!conversation){
+      app.innerHTML='<p class="text-slate-400">Matches exist, but conversations need database setup.</p>';
+      return;
+    }
+
+    let mr=await sb.from('messages').select('id,sender_id,text,created_at').eq('conversation_id',conversation).order('created_at',{ascending:true}).limit(100);
+    if(mr.error||!mr.data){
+      app.innerHTML='<p class="text-amber-200">Error loading messages. Check database access.</p>';
+      return;
+    }
+
+    let other_id=null;
+    for(let m of ms){
+      if(convs.find(c=>c.match_id===m.id&&c.id===conversation)){
+        other_id=m.user_1_id===uid?m.user_2_id:m.user_1_id;
+        break;
+      }
+    }
+    if(!other_id){
+      app.innerHTML='<p class="text-slate-400">Conversation match not found.</p>';
+      return;
+    }
+
+    let op=await sb.from('profiles').select('id,full_name,profile_photo_url').eq('id',other_id).maybeSingle();
+    let other=op.data||{full_name:'User',profile_photo_url:''};
+
+    let msgs=mr.data.map(m=>{
+      let isMe=m.sender_id===uid;
+      let time=new Date(m.created_at).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+      return '<div class="flex '+(isMe?'justify-end':'justify-start')+' mb-3"><div class="'+(isMe?'bg-pink-600 rounded-3xl rounded-tr-md':'bg-slate-700 rounded-3xl rounded-tl-md')+' px-4 py-2 max-w-xs"><p class="text-sm">'+esc(m.text)+'</p><small class="text-xs '+(isMe?'text-pink-100':'text-slate-300')+' opacity-70">'+time+'</small></div></div>';
+    }).join('');
+
+    app.innerHTML='<div class="flex flex-col h-[60vh]"><div class="flex items-center gap-3 pb-3 border-b border-white/10 mb-3"><img src="'+esc(other.profile_photo_url)+'" class="w-10 h-10 rounded-full object-cover bg-slate-700"><b>'+esc(other.full_name)+'</b><button class="ml-auto text-slate-400 hover:text-white" onclick="tab(\'likes\')"><i data-lucide="info"></i></button></div><div class="flex-1 overflow-y-auto mb-3 space-y-1">'+(msgs||'<p class="text-xs text-slate-500">Start a conversation…</p>')+'</div><form onsubmit="sendMessage(event,\''+esc(conversation)+'\')" class="flex gap-2"><input id="msgtext" class="field flex-1" placeholder="Your message..." maxlength="500" required><button class="btn primary" type="submit">Send</button></form></div>';
+    icons();
+    document.querySelector('#msgtext')?.focus();
+  }catch(e){
+    app.innerHTML='<p class="text-red-300">Chat error: '+esc(e.message)+'</p>';
+  }
+}
+
+window.sendMessage=async(e,cid)=>{
+  e.preventDefault();
+  if(!session||!cid) return;
+  let txt=$('msgtext')?.value.trim();
+  if(!txt) return;
+  try{
+    let r=await sb.from('messages').insert({conversation_id:cid,sender_id:session.user.id,text:txt});
+    if(r.error) throw r.error;
+    $('msgtext').value='';
+    await chat();
+  }catch(e){
+    toast('Message failed: '+e.message,true);
+  }
+};
+
+async function profile(){
+  let app=$('app');
+  if(!session){
+    app.innerHTML=required('Sign in to create your profile.');
+    icons();
+    return;
+  }
+
+  if(!me){
+    app.innerHTML=`<h1 class="text-2xl font-bold mb-4">Create Your Profile</h1>
+    <form onsubmit="saveProfile(event)" class="space-y-4 max-w-2xl">
+      <label class="block text-sm"><b>Full name</b>
+        <input id="p_name" class="field mt-1" required>
+      </label>
+      <label class="block text-sm"><b>Date of birth</b>
+        <input id="p_dob" class="field mt-1" type="date" required>
+      </label>
+      <label class="block text-sm"><b>Location</b>
+        <input id="p_loc" class="field mt-1" placeholder="City, Country" required>
+      </label>
+      <label class="block text-sm"><b>About you</b>
+        <textarea id="p_bio" class="field mt-1 h-20 resize-none" placeholder="Tell people about yourself…"></textarea>
+      </label>
+      <label class="block text-sm"><b>Interests</b>
+        <input id="p_int" class="field mt-1" placeholder="Music, Travel, Coffee (comma-separated)">
+      </label>
+      <label class="block text-sm"><b>Profile photo</b>
+        <input id="p_photo" type="file" class="field mt-1" accept="image/jpeg,image/png,image/webp">
+        ${preview?'<img src="'+preview+'" class="mt-2 w-32 h-32 rounded-2xl object-cover">':''}
+      </label>
+      <button type="submit" class="btn primary w-full">Create Profile</button>
+    </form>`;
+    document.getElementById('p_photo')?.addEventListener('change',previewPhoto);
+    icons();
+    return;
+  }
+
+  app.innerHTML=`<h1 class="text-2xl font-bold mb-4">Your Profile</h1>
+  <div class="max-w-2xl space-y-4">
+    <div class="rounded-2xl overflow-hidden border border-white/10">
+      <img src="${esc(me.profile_photo_url)}" class="w-full h-80 object-cover bg-slate-700">
+    </div>
+    <div class="bg-slate-900 border border-white/10 rounded-2xl p-5 space-y-3">
+      <h2 class="text-xl font-bold">${esc(me.full_name||'Your Name')}</h2>
+      <p class="text-slate-300">${esc(me.bio||'')}</p>
+      <p class="text-sm text-slate-400">📍 ${esc(me.location||'')}</p>
+      <div class="flex flex-wrap gap-2">
+        ${(Array.isArray(me.interests)?me.interests:[]).map(i=>'<span class="rounded-full bg-slate-700 px-3 py-1 text-xs">'+esc(i)+'</span>').join('')}
+      </div>
+    </div>
+    <button class="btn secondary w-full" onclick="editProfile()">Edit Profile</button>
+    <button class="btn secondary w-full" onclick="logout()">Sign out</button>
+    <p class="text-xs text-slate-500 mt-8">
+      Tip: Complete your profile so others know you're real. Upload a clear portrait photo, write a genuine bio, and list interests that matter to you.
+    </p>
+  </div>`;
+  icons();
+}
+
+window.previewPhoto=e=>{
+  let f=e.target.files[0];
+  if(f){
+    let r=new FileReader();
+    r.onload=ev=>{preview=ev.target.result};
+    r.readAsDataURL(f);
+  }
+};
+
+window.editProfile=()=>{
+  if(!me) return;
+  let app=$('app');
+  app.innerHTML=`<h1 class="text-2xl font-bold mb-4">Edit Profile</h1>
+  <form onsubmit="updateProfile(event)" class="space-y-4 max-w-2xl">
+    <label class="block text-sm"><b>Full name</b>
+      <input id="p_name" class="field mt-1" value="${esc(me.full_name||'')}" required>
+    </label>
+    <label class="block text-sm"><b>Location</b>
+      <input id="p_loc" class="field mt-1" value="${esc(me.location||'')}" required>
+    </label>
+    <label class="block text-sm"><b>About you</b>
+      <textarea id="p_bio" class="field mt-1 h-20 resize-none">${esc(me.bio||'')}</textarea>
+    </label>
+    <label class="block text-sm"><b>Interests</b>
+      <input id="p_int" class="field mt-1" value="${(Array.isArray(me.interests)?me.interests:[]).join(', ')||''}">
+    </label>
+    <label class="block text-sm"><b>Update photo</b>
+      <input id="p_photo" type="file" class="field mt-1" accept="image/jpeg,image/png,image/webp">
+      ${preview?'<img src="'+preview+'" class="mt-2 w-32 h-32 rounded-2xl object-cover">':me.profile_photo_url?'<img src="'+esc(me.profile_photo_url)+'" class="mt-2 w-32 h-32 rounded-2xl object-cover">':''}
+    </label>
+    <button type="submit" class="btn primary w-full">Save Changes</button>
+    <button type="button" class="btn secondary w-full" onclick="tab('profile')">Cancel</button>
+  </form>`;
+  document.getElementById('p_photo')?.addEventListener('change',previewPhoto);
+  icons();
+};
+
+window.saveProfile=async e=>{
+  e.preventDefault();
+  if(!session) return;
+  try{
+    let name=$('p_name').value.trim(),dob=$('p_dob').value,loc=$('p_loc').value.trim(),bio=$('p_bio').value.trim(),ints=$('p_int').value.split(',').map(s=>s.trim()).filter(s=>s),photo=$('p_photo').files[0];
+    if(!name||!dob||!loc) return toast('Fill in all required fields',true);
+    let photo_url=null;
+    if(photo){
+      if(photo.size>5*1024*1024) return toast('Photo must be under 5MB',true);
+      if(!['image/jpeg','image/png','image/webp'].includes(photo.type)) return toast('Use JPEG, PNG or WebP',true);
+      let path='avatars/'+session.user.id+'/'+Date.now();
+      let r=await sb.storage.from('avatars').upload(path,photo,{upsert:true});
+      if(r.error){
+        toast('Photo upload failed. Check storage bucket "avatars" exists with public read policy.',true);
+        return;
+      }
+      let u=sb.storage.from('avatars').getPublicUrl(path);
+      photo_url=u.data.publicUrl;
+    }
+    let r=await sb.from('profiles').upsert({id:session.user.id,full_name:name,date_of_birth:dob,location:loc,bio:bio,interests:ints,profile_photo_url:photo_url||null,updated_at:new Date()});
+    if(r.error){
+      toast('Profile save failed: '+r.error.message,true);
+    }else{
+      await loadMine();
+      toast('Profile created! Start discovering.');
+      tab('discover');
+    }
+  }catch(e){
+    toast('Error: '+e.message,true);
+  }
+};
+
+window.updateProfile=async e=>{
+  e.preventDefault();
+  if(!session||!me) return;
+  try{
+    let name=$('p_name').value.trim(),loc=$('p_loc').value.trim(),bio=$('p_bio').value.trim(),ints=$('p_int').value.split(',').map(s=>s.trim()).filter(s=>s),photo=$('p_photo').files[0];
+    if(!name||!loc) return toast('Fill in required fields',true);
+    let photo_url=me.profile_photo_url;
+    if(photo){
+      if(photo.size>5*1024*1024) return toast('Photo must be under 5MB',true);
+      if(!['image/jpeg','image/png','image/webp'].includes(photo.type)) return toast('Use JPEG, PNG or WebP',true);
+      let path='avatars/'+session.user.id+'/'+Date.now();
+      let r=await sb.storage.from('avatars').upload(path,photo,{upsert:true});
+      if(r.error){
+        toast('Upload failed: '+r.error.message,true);
+        return;
+      }
+      let u=sb.storage.from('avatars').getPublicUrl(path);
+      photo_url=u.data.publicUrl;
+    }
+    let r=await sb.from('profiles').update({full_name:name,location:loc,bio:bio,interests:ints,profile_photo_url:photo_url,updated_at:new Date()}).eq('id',session.user.id);
+    if(r.error){
+      toast('Update failed: '+r.error.message,true);
+    }else{
+      await loadMine();
+      toast('Profile updated!');
+      tab('profile');
+    }
+  }catch(e){
+    toast('Error: '+e.message,true);
+  }
+};
+
+window.addEventListener('load',init);
+</script>
+</body>
+</html>
