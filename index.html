@@ -1,60 +1,163 @@
-Build a modern, mobile-friendly worldwide dating website called Love2Connect.
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#8b2be2">
+  <title>Love2Connect - Find Your Connection</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: #292039;
+      background: #fff8fc;
+    }
+    header {
+      background: linear-gradient(120deg, #7626ce, #e83e8c);
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    header h1 { margin: 0 0 8px; font-size: 30px; }
+    nav { margin-top: 18px; }
+    nav a {
+      color: white;
+      text-decoration: none;
+      margin: 0 8px;
+      font-size: 14px;
+    }
+    .hero {
+      text-align: center;
+      padding: 55px 20px;
+      background: linear-gradient(135deg, #f9e6ff, #ffe4ef);
+    }
+    .hero h2 { font-size: 32px; margin: 0 0 15px; }
+    .hero p { line-height: 1.6; max-width: 500px; margin: 0 auto 24px; }
+    .button {
+      display: inline-block;
+      border: none;
+      background: #8b2be2;
+      color: white;
+      padding: 13px 22px;
+      border-radius: 25px;
+      text-decoration: none;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    section { padding: 30px 18px; text-align: center; }
+    .profiles {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+      gap: 15px;
+      max-width: 850px;
+      margin: 20px auto;
+    }
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 20px 12px;
+      box-shadow: 0 3px 15px #00000010;
+    }
+    .avatar {
+      width: 85px;
+      height: 85px;
+      margin: auto;
+      border-radius: 50%;
+      background: #f1ddff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 38px;
+    }
+    .card h3 { margin-bottom: 5px; }
+    .card p { color: #756b80; font-size: 14px; }
+    .like {
+      background: #e83e8c;
+      color: white;
+      border: 0;
+      padding: 10px 18px;
+      border-radius: 22px;
+      cursor: pointer;
+    }
+    .premium {
+      background: #f1e5ff;
+      border-radius: 18px;
+      max-width: 550px;
+      margin: 0 auto;
+      padding: 28px 18px;
+    }
+    footer {
+      background: #292039;
+      color: white;
+      text-align: center;
+      padding: 24px 15px;
+      font-size: 13px;
+      line-height: 1.8;
+    }
+    footer a { color: #ffd1ed; }
+    .notice { font-size: 12px; color: #756b80; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>💜 Love2Connect</h1>
+    <p>Real connections. Meaningful relationships.</p>
+    <nav>
+      <a href="#home">Home</a>
+      <a href="#discover">Discover</a>
+      <a href="#premium">Premium</a>
+    </nav>
+  </header>  <main>
+    <section class="hero" id="home">
+      <h2>Your love story starts here 💕</h2>
+      <p>Meet new people, discover shared interests, and find meaningful connections with adults around the world.</p>
+      <a class="button" href="#discover">Discover Members</a>
+    </section><section id="discover">
+  <h2>Discover Connections</h2>
+  <p>Imagine the people you could meet!</p>
+  <div class="profiles">
+    <div class="card">
+      <div class="avatar">😊</div>
+      <h3>Alex, 27</h3>
+      <p>Nairobi, Kenya</p>
+      <button class="like" onclick="demoLike('Alex')">♡ Like</button>
+    </div>
+    <div class="card">
+      <div class="avatar">🌻</div>
+      <h3>Jordan, 29</h3>
+      <p>London, UK</p>
+      <button class="like" onclick="demoLike('Jordan')">♡ Like</button>
+    </div>
+    <div class="card">
+      <div class="avatar">🌍</div>
+      <h3>Sam, 26</h3>
+      <p>Toronto, Canada</p>
+      <button class="like" onclick="demoLike('Sam')">♡ Like</button>
+    </div>
+  </div>
+  <p class="notice">These are fictional demonstration profiles, not real members.</p>
+</section>
 
-Project goal: Create a dating platform where adults aged 18 and above can register, create profiles, discover other members, like profiles, match with people who like them back, and chat privately. The website should eventually generate revenue through premium subscriptions and paid features.
+<section id="premium">
+  <div class="premium">
+    <h2>✨ Love2Connect Premium</h2>
+    <p>We're planning exciting benefits for premium members.</p>
+    <p>💜 Advanced discovery filters</p>
+    <p>💜 More ways to connect</p>
+    <p>💜 Enhanced profile options</p>
+    <button class="button" onclick="alert('Premium subscriptions are coming soon. Payments are not enabled yet.')">Explore Premium</button>
+    <p class="notice">Subscriptions and payments are not active yet.</p>
+  </div>
+</section>
 
-1. Design
-
-- Use a modern, attractive design with purple, pink, white, and subtle gradients.
-- Display the Love2Connect name and a heart-themed logo.
-- Make the website responsive on Android phones, tablets, and computers.
-- Use clean navigation, attractive profile cards, and simple buttons.
-- Make the interface professional and easy to use.
-
-2. Main pages
-
-Create the following pages:
-
-- Home page with a welcome message and Join Now button.
-- Sign-up and login pages.
-- Member profile creation and editing page.
-- Discover page with member profile cards.
-- Likes and mutual matches page.
-- Private messaging page.
-- Premium membership and pricing page.
-- Settings, report, block, and account deletion pages.
-
-3. User profiles
-
-Members should be able to add their display name, age, country, interests, biography, and profile photos. Only adults aged 18 or older may register. Allow members to edit their profiles and control their privacy.
-
-4. Likes and matching
-
-Allow a member to like another profile. Create a match only when both members have liked each other. Do not allow a member to like their own profile.
-
-5. Private messaging
-
-Allow matched members to exchange private messages. Messages must be accessible only to authorized participants. Include blocking and reporting features.
-
-6. Premium membership
-
-Create a premium page with monthly and annual subscription options. Show premium benefits such as advanced filters and additional likes. Include a clear pricing interface, but do not pretend that payments work until a payment provider is integrated and tested.
-
-7. Technology
-
-- Use HTML, CSS, and JavaScript, or a suitable modern framework.
-- Use Supabase for authentication, database storage, and profile photo storage.
-- Configure database security policies so members can access only the data they are authorized to see.
-- Prepare the website for deployment on Netlify with a free Netlify subdomain.
-- Keep API keys and secrets out of public source code.
-
-8. Safety and security
-
-Include adult-only registration, privacy controls, report and block functions, secure authentication, and account deletion. Never expose passwords, private messages, or private user information publicly. Use fictional sample profiles during development.
-
-9. Development instructions
-
-Build the project step by step. Start with a working homepage and responsive navigation. Then implement registration, profiles, matching, messaging, and premium membership. Explain which files to create and provide the complete code for each file.
-
-Do not claim that a feature is operational until it has been implemented and tested. Clearly identify any configuration or payment integration that still needs to be completed.
-
-Final objective: Deliver a functional, secure, mobile-friendly Love2Connect dating website that can start on free hosting and later scale as its membership grows.
+  </main>  <footer>
+    <p><strong>Love2Connect</strong> — Bringing people closer.</p>
+    <p>For adults aged 18 and above.</p>
+    <p>Safety, respect, and privacy matter.</p>
+    <p>© 2026 Love2Connect</p>
+  </footer>  <script>
+    function demoLike(name) {
+      alert("You liked " + name + "! This is a demonstration only. Real matching will be added later.");
+    }
+  </script></body>
+  </html>
