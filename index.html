@@ -50,9 +50,9 @@
   </nav>
 
   <script>
-    // Initialize Supabase if environment variables are injected via Netlify build or fallback safely
-    const supabaseUrl = window.VITE_SUPABASE_URL || '';
-    const supabaseAnonKey = window.VITE_SUPABASE_ANON_KEY || '';
+    // Supabase Configuration with your credentials
+    const supabaseUrl = 'https://ycoywnfsfqygubszrzzt.supabase.co';
+    const supabaseAnonKey = 'sb_publishable_240ym7HucnCx-1d3PvuhOg_8ReZALm6';
     let supabaseClient = null;
 
     if (supabaseUrl && supabaseAnonKey) {
@@ -64,14 +64,13 @@
 
     let currentTab = 'discover';
     let messages = [
-      { id: 1, sender: 'Alex', text: 'Hey there! How is your day going?', time: '14:20', isMe: false },
-      { id: 2, sender: 'You', text: 'Hi Alex! Going great, just checking out Love2Connect.', time: '14:22', isMe: true },
+      { id: 1, sender: 'Chloe', text: 'Hey there! How is your day going?', time: '14:20', isMe: false },
+      { id: 2, sender: 'You', text: 'Hi Chloe! Going great, just checking out Love2Connect.', time: '14:22', isMe: true },
     ];
 
     function switchTab(tab) {
       currentTab = tab;
       
-      // Update nav button styles
       document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.className = "nav-btn flex flex-col items-center space-y-1 text-slate-400 hover:text-slate-600 transition";
         let icon = btn.querySelector('i');
@@ -101,15 +100,13 @@
               </h2>
             </div>
             ${[
-              { name: 'Alex, 27', location: 'Nairobi, Kenya', bio: 'Coffee lover, software dev, & weekend hiker.' },
-              { name: 'Jordan, 29', location: 'London, UK', bio: 'Passionate about photography and jazz music.' },
-              { name: 'Sam, 26', location: 'Toronto, Canada', bio: 'Always down for live concerts and street food.' }
+              { name: 'Chloe, 24', location: 'Nairobi, Kenya', img: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80', bio: 'Adventurous spirit looking for genuine connections.' },
+              { name: 'Liam, 27', location: 'Mombasa, Kenya', img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80', bio: 'Coffee lover, tech enthusiast, and weekend surfer.' },
+              { name: 'Sofia, 25', location: 'Kisumu, Kenya', img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80', bio: 'Arts and culture seeker, love deep conversations.' }
             ].map(profile => `
               <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 space-y-3">
                 <div class="flex items-center space-x-4">
-                  <div class="w-14 h-14 rounded-full bg-gradient-to-tr from-pink-400 to-purple-500 flex items-center justify-center text-white text-xl font-bold shadow">
-                    ${profile.name[0]}
-                  </div>
+                  <img src="${profile.img}" alt="${profile.name}" class="w-14 h-14 rounded-full object-cover shadow" />
                   <div>
                     <h3 class="font-bold text-slate-900">${profile.name}</h3>
                     <p class="text-xs text-slate-500">${profile.location}</p>
@@ -133,9 +130,9 @@
           <section class="bg-white rounded-2xl shadow-sm border border-slate-100 flex flex-col h-[75vh]">
             <div class="p-4 border-b border-slate-100 flex items-center justify-between">
               <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-full bg-pink-500 text-white font-bold flex items-center justify-center">A</div>
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" class="w-10 h-10 rounded-full object-cover" />
                 <div>
-                  <h3 class="font-bold text-slate-900 text-sm">Alex</h3>
+                  <h3 class="font-bold text-slate-900 text-sm">Chloe</h3>
                   <span class="text-xs text-emerald-500 font-medium">● Online</span>
                 </div>
               </div>
@@ -168,11 +165,11 @@
           <section class="bg-gradient-to-b from-slate-900 to-slate-800 text-white rounded-3xl p-8 flex flex-col items-center justify-between text-center min-h-[70vh] shadow-xl">
             <div class="space-y-2 mt-6">
               <span class="text-xs uppercase tracking-widest text-pink-400 font-semibold">Voice & Video Call</span>
-              <h2 class="text-2xl font-bold">Alex</h2>
+              <h2 class="text-2xl font-bold">Chloe</h2>
               <p class="text-xs text-slate-400">Ready to connect...</p>
             </div>
-            <div class="w-32 h-32 rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 p-1 animate-pulse">
-              <div class="w-full h-full rounded-full bg-slate-800 flex items-center justify-center text-4xl font-bold">A</div>
+            <div class="relative">
+              <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" class="w-32 h-32 rounded-full object-cover border-4 border-pink-500 animate-pulse shadow-2xl" />
             </div>
             <div class="flex items-center space-x-6 mb-6">
               <button class="p-4 bg-slate-700/80 hover:bg-slate-700 rounded-full text-white shadow-lg"><i data-lucide="phone" class="w-6 h-6"></i></button>
@@ -189,12 +186,15 @@
               </div>
               <div>
                 <h2 class="text-xl font-bold text-slate-900">Your Profile</h2>
-                <p class="text-xs text-slate-500">Connected via Supabase Auth</p>
+                <p class="text-xs text-emerald-600 font-medium">● Backend Connected via Supabase</p>
               </div>
             </div>
             <div class="space-y-3 pt-2">
               <button class="w-full flex items-center justify-between p-3.5 bg-slate-50 hover:bg-slate-100 rounded-xl text-sm font-medium text-slate-700 transition">
                 <span class="flex items-center gap-2"><i data-lucide="user" class="w-4 h-4 text-purple-500"></i> Edit Profile Details</span><span>›</span>
+              </button>
+              <button onclick="alert('M-Pesa integration coming up next for VIP messaging & matches!')" class="w-full flex items-center justify-between p-3.5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl text-sm font-medium text-emerald-800 transition">
+                <span class="flex items-center gap-2"><i data-lucide="credit-card" class="w-4 h-4 text-emerald-600"></i> Buy Credits (M-Pesa)</span><span>›</span>
               </button>
               <button class="w-full flex items-center justify-between p-3.5 bg-slate-50 hover:bg-slate-100 rounded-xl text-sm font-medium text-slate-700 transition">
                 <span class="flex items-center gap-2"><i data-lucide="settings" class="w-4 h-4 text-purple-500"></i> Account Settings</span><span>›</span>
@@ -204,7 +204,6 @@
         `;
       }
 
-      // Re-initialize Lucide icons after updating HTML content
       lucide.createIcons();
     }
 
@@ -219,10 +218,8 @@
       renderContent();
     }
 
-    // Initial render on load
     renderContent();
   </script>
 </body>
-  </html>
-  
+</html>
 
